@@ -1,6 +1,16 @@
 import { useMemo } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { BadgeCheck, ExternalLink, Eye, Film, Users, Tag, Calendar, TrendingUp, Youtube } from "lucide-react";
+import {
+  BadgeCheck,
+  ExternalLink,
+  Eye,
+  Film,
+  Users,
+  Tag,
+  Calendar,
+  TrendingUp,
+  Youtube,
+} from "lucide-react";
 import type { LiveCreator } from "./types";
 import { formatNumber, formatFull } from "@/lib/format";
 
@@ -84,7 +94,12 @@ export function CreatorModal({
               <p className="text-sm text-muted-foreground leading-relaxed">{creator.description}</p>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <StatCard icon={Users} label="Subscribers" value={formatFull(creator.subscribers)} hint={`${creator.delta >= 0 ? "+" : ""}${creator.delta} live`} />
+                <StatCard
+                  icon={Users}
+                  label="Subscribers"
+                  value={formatFull(creator.subscribers)}
+                  hint={`${creator.delta >= 0 ? "+" : ""}${creator.delta} live`}
+                />
                 <StatCard icon={Eye} label="Total Views" value={formatNumber(creator.views)} />
                 <StatCard icon={Film} label="Videos" value={formatFull(creator.videos)} />
                 <StatCard icon={Tag} label="Niche" value={creator.niche[0] ?? "Gaming"} />
@@ -106,7 +121,8 @@ export function CreatorModal({
                         className="w-full rounded-t-md transition-all"
                         style={{
                           height: `${(g.value / max) * 100}%`,
-                          background: "linear-gradient(180deg, oklch(0.72 0.22 160), oklch(0.68 0.25 320))",
+                          background:
+                            "linear-gradient(180deg, oklch(0.72 0.22 160), oklch(0.68 0.25 320))",
                           boxShadow: "0 0 12px oklch(0.72 0.22 160 / 0.4)",
                         }}
                       />
@@ -135,7 +151,17 @@ export function CreatorModal({
   );
 }
 
-function StatCard({ icon: Icon, label, value, hint }: { icon: React.ElementType; label: string; value: string; hint?: string }) {
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  hint,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  hint?: string;
+}) {
   return (
     <div className="glass rounded-xl p-3">
       <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -147,7 +173,15 @@ function StatCard({ icon: Icon, label, value, hint }: { icon: React.ElementType;
   );
 }
 
-function SocialLink({ icon: Icon, href, label }: { icon: React.ElementType; href: string; label: string }) {
+function SocialLink({
+  icon: Icon,
+  href,
+  label,
+}: {
+  icon: React.ElementType;
+  href: string;
+  label: string;
+}) {
   return (
     <a
       href={href}

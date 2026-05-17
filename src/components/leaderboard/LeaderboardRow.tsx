@@ -16,8 +16,8 @@ export function LeaderboardRow({
     rankDiff > 0
       ? "text-[oklch(0.88_0.22_140)]"
       : rankDiff < 0
-      ? "text-[oklch(0.65_0.25_25)]"
-      : "text-muted-foreground";
+        ? "text-[oklch(0.65_0.25_25)]"
+        : "text-muted-foreground";
 
   const deltaKey = `${creator.id}-${creator.subscribers}`;
 
@@ -80,8 +80,8 @@ export function LeaderboardRow({
               creator.delta > 0
                 ? "text-[oklch(0.88_0.22_140)]"
                 : creator.delta < 0
-                ? "text-[oklch(0.65_0.25_25)]"
-                : "text-muted-foreground"
+                  ? "text-[oklch(0.65_0.25_25)]"
+                  : "text-muted-foreground"
             }`}
           >
             {creator.delta > 0 ? "+" : ""}

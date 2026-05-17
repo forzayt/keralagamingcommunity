@@ -17,9 +17,16 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Kerala Gaming Leaderboard — Live Creator Rankings" },
-      { name: "description", content: "Real-time leaderboard of Kerala's top YouTube gaming creators with live subscriber tracking, podium rankings, and esports-grade analytics." },
+      {
+        name: "description",
+        content:
+          "Real-time leaderboard of Kerala's top YouTube gaming creators with live subscriber tracking, podium rankings, and esports-grade analytics.",
+      },
       { property: "og:title", content: "Kerala Gaming Leaderboard" },
-      { property: "og:description", content: "Live ranks for Kerala's most influential gaming creators." },
+      {
+        property: "og:description",
+        content: "Live ranks for Kerala's most influential gaming creators.",
+      },
     ],
   }),
   component: Index,
@@ -30,7 +37,12 @@ const urls = creatorUrls as string[];
 type SortKey = "subscribers" | "views" | "videos";
 
 function Index() {
-  const { data: seed = [], isLoading, isError, refetch } = useQuery({
+  const {
+    data: seed = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["channels", urls],
     queryFn: () => fetchChannels({ urls }),
     staleTime: 5 * 60 * 1000,
@@ -87,13 +99,17 @@ function Index() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-[oklch(0.88_0.22_140)] opacity-60 animate-ping" />
               <span className="relative inline-flex rounded-full size-2 bg-[oklch(0.88_0.22_140)]" />
             </span>
-           <Radio className="size-3" /><a href="https://www.tvaxkva.com/" target="_blank" rel="noopener noreferrer"> Streaming Now</a> 
+            <Radio className="size-3" />
+            <a href="https://www.tvaxkva.com/" target="_blank" rel="noopener noreferrer">
+              {" "}
+              Streaming Now
+            </a>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10">
-        <motion.section 
+        <motion.section
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: "spring", stiffness: 100, damping: 20 }}
@@ -103,10 +119,12 @@ function Index() {
             <Trophy className="size-3.5" /> season 26 · live
           </div>
           <h2 className="text-4xl sm:text-6xl font-black leading-[1.05] max-w-3xl">
-            The pulse of <span className="text-gradient">Kerala's</span> gaming creators, ranked in real time.
+            The pulse of <span className="text-gradient">Kerala's</span> gaming creators, ranked in
+            real time.
           </h2>
           <p className="text-muted-foreground max-w-2xl">
-            Subscriber counts update every second. Watch ranks shift, podiums shake, and underdogs climb — straight from God's own gaming country.
+            Subscriber counts update every second. Watch ranks shift, podiums shake, and underdogs
+            climb — straight from God's own gaming country.
           </p>
           <div className="flex flex-wrap gap-6 pt-2 text-sm">
             <Stat label="Creators tracked" value={live.length.toString()} />
@@ -117,7 +135,7 @@ function Index() {
 
         {isLoading ? <PodiumSkeleton /> : <Podium top3={top3} onSelect={setSelected} />}
 
-        <motion.section 
+        <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.1 }}
@@ -133,7 +151,13 @@ function Index() {
             />
           </div>
           <div className="flex flex-wrap gap-2">
-            <SelectChip icon={<Filter className="size-3" />} value={niche} onChange={setNiche} options={niches} prefix="Niche" />
+            <SelectChip
+              icon={<Filter className="size-3" />}
+              value={niche}
+              onChange={setNiche}
+              options={niches}
+              prefix="Niche"
+            />
             <SelectChip
               value={sortKey}
               onChange={(v) => setSortKey(v as SortKey)}
@@ -143,7 +167,7 @@ function Index() {
           </div>
         </motion.section>
 
-        <motion.section 
+        <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.2 }}
@@ -158,15 +182,19 @@ function Index() {
             <span className="text-center">Trend</span>
           </div>
           <AnimatePresence>
-            {!isLoading && filtered.map((c) => (
-              <LeaderboardRow key={c.id} creator={c} onClick={() => setSelected(c)} />
-            ))}
+            {!isLoading &&
+              filtered.map((c) => (
+                <LeaderboardRow key={c.id} creator={c} onClick={() => setSelected(c)} />
+              ))}
           </AnimatePresence>
           {isLoading && <LeaderboardSkeleton />}
           {isError && (
             <div className="glass rounded-2xl p-10 text-center space-y-3">
               <p className="text-muted-foreground">Couldn't reach YouTube. Try again.</p>
-              <button onClick={() => refetch()} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold">
+              <button
+                onClick={() => refetch()}
+                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold"
+              >
                 Retry
               </button>
             </div>
@@ -256,7 +284,10 @@ function LeaderboardSkeleton() {
   return (
     <>
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="w-full glass rounded-2xl p-4 grid grid-cols-[40px_1fr_auto] sm:grid-cols-[48px_2fr_1fr_1fr_1fr_80px] gap-3 sm:gap-4 items-center">
+        <div
+          key={i}
+          className="w-full glass rounded-2xl p-4 grid grid-cols-[40px_1fr_auto] sm:grid-cols-[48px_2fr_1fr_1fr_1fr_80px] gap-3 sm:gap-4 items-center"
+        >
           <Skeleton className="h-6 w-6" />
           <div className="flex items-center gap-3">
             <Skeleton className="size-10 sm:size-12 rounded-full shrink-0" />

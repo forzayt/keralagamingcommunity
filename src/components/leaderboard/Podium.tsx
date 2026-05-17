@@ -5,12 +5,36 @@ import { formatNumber } from "@/lib/format";
 
 const ORDER = [1, 0, 2]; // visual order: 2nd, 1st, 3rd
 const META = [
-  { icon: Crown, label: "1st", color: "var(--gold)", height: "h-44", glow: "shadow-[0_0_60px_oklch(0.85_0.17_90/0.4)]" },
-  { icon: Trophy, label: "2nd", color: "var(--silver)", height: "h-32", glow: "shadow-[0_0_40px_oklch(0.82_0.02_270/0.3)]" },
-  { icon: Medal, label: "3rd", color: "var(--bronze)", height: "h-28", glow: "shadow-[0_0_40px_oklch(0.7_0.13_60/0.3)]" },
+  {
+    icon: Crown,
+    label: "1st",
+    color: "var(--gold)",
+    height: "h-44",
+    glow: "shadow-[0_0_60px_oklch(0.85_0.17_90/0.4)]",
+  },
+  {
+    icon: Trophy,
+    label: "2nd",
+    color: "var(--silver)",
+    height: "h-32",
+    glow: "shadow-[0_0_40px_oklch(0.82_0.02_270/0.3)]",
+  },
+  {
+    icon: Medal,
+    label: "3rd",
+    color: "var(--bronze)",
+    height: "h-28",
+    glow: "shadow-[0_0_40px_oklch(0.7_0.13_60/0.3)]",
+  },
 ];
 
-export function Podium({ top3, onSelect }: { top3: LiveCreator[]; onSelect: (c: LiveCreator) => void }) {
+export function Podium({
+  top3,
+  onSelect,
+}: {
+  top3: LiveCreator[];
+  onSelect: (c: LiveCreator) => void;
+}) {
   if (top3.length < 3) return null;
 
   return (
@@ -57,7 +81,9 @@ export function Podium({ top3, onSelect }: { top3: LiveCreator[]; onSelect: (c: 
                 <div className="mt-2 text-lg sm:text-xl font-bold text-gradient tabular-nums">
                   {formatNumber(creator.subscribers)}
                 </div>
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">subscribers</div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  subscribers
+                </div>
               </div>
               <div
                 className={`w-full ${meta.height} rounded-xl flex items-center justify-center text-3xl sm:text-5xl font-black`}

@@ -16,7 +16,7 @@ function deriveNiche(name: string, description: string, keywords: string | null)
     "call of duty": "COD",
     fifa: "FIFA",
     fps: "FPS",
-    "roleplay": "RP",
+    roleplay: "RP",
     "mobile legends": "MLBB",
     mlbb: "MLBB",
     horror: "Horror",
@@ -39,7 +39,7 @@ async function fetchChannel(url: string, idx: number, apiKey: string): Promise<C
     const base = url.replace(/\/+$/, "");
     let apiUrl = "";
     let handle = "";
-    
+
     const handleMatch = base.match(/@([^/]+)/);
     if (handleMatch) {
       handle = `@${handleMatch[1]}`;
@@ -58,9 +58,9 @@ async function fetchChannel(url: string, idx: number, apiKey: string): Promise<C
     const res = await fetch(apiUrl);
     if (!res.ok) return null;
     const data = await res.json();
-    
+
     if (!data.items || data.items.length === 0) return null;
-    
+
     const channel = data.items[0];
     const snippet = channel.snippet;
     const stats = channel.statistics;
@@ -87,7 +87,24 @@ async function fetchChannel(url: string, idx: number, apiKey: string): Promise<C
 
 export const fetchChannels = async (data: { urls: string[] }): Promise<Creator[]> => {
   if (!Array.isArray(data?.urls)) throw new Error("urls must be an array");
-  
+
+  // 1. Try to fetch from the cached Vercel Serverless Function first
+  try {
+    const res = await fetch("/api/channels");
+    const contentType = res.headers.get("content-type");
+
+    // Check if it's JSON to avoid parsing Vite's HTML SPA fallback in local dev
+    if (res.ok && contentType && contentType.includes("application/json")) {
+      const apiData = await res.json();
+      if (Array.isArray(apiData)) {
+        return apiData;
+      }
+    }
+  } catch (e) {
+    console.warn("Failed to fetch from Vercel API, falling back to client-side fetch", e);
+  }
+
+  // 2. Fallback / Local Development: Client-side fetch
   const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY;
   if (!apiKey) {
     console.error("VITE_YOUTUBE_API_KEY is not defined in your environment variables.");
