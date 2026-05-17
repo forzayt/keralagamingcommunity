@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Filter, Gamepad2, Trophy, Radio, Loader2 } from "lucide-react";
 import creatorUrls from "@/data/creators.json";
@@ -92,7 +92,12 @@ function Index() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10">
-        <section className="space-y-4">
+        <motion.section 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, damping: 20 }}
+          className="space-y-4"
+        >
           <div className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-primary">
             <Trophy className="size-3.5" /> season 26 · live
           </div>
@@ -107,11 +112,16 @@ function Index() {
             <Stat label="Combined reach" value={(totalSubs / 1_000_000).toFixed(2) + "M"} />
             <Stat label="Niches" value={(niches.length - 1).toString()} />
           </div>
-        </section>
+        </motion.section>
 
         <Podium top3={top3} onSelect={setSelected} />
 
-        <section className="glass rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.1 }}
+          className="glass rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:items-center"
+        >
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
@@ -130,9 +140,14 @@ function Index() {
               prefix="Sort"
             />
           </div>
-        </section>
+        </motion.section>
 
-        <section className="space-y-2">
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.2 }}
+          className="space-y-2"
+        >
           <div className="hidden sm:grid grid-cols-[48px_2fr_1fr_1fr_1fr_80px] gap-4 px-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
             <span>#</span>
             <span>Creator</span>
@@ -164,10 +179,10 @@ function Index() {
               No creators match those filters.
             </div>
           )}
-        </section>
+        </motion.section>
 
         <footer className="pt-12 pb-8 text-center text-xs text-muted-foreground">
-          Built for the Kerala gaming community · Live data simulated for demo purposes
+          Built by a gamer for gamers.
         </footer>
       </main>
 
