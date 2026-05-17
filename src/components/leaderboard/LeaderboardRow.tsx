@@ -74,18 +74,20 @@ export function LeaderboardRow({
         >
           {formatNumber(creator.subscribers)}
         </motion.div>
-        <div
-          className={`text-[10px] tabular-nums ${
-            creator.delta > 0
-              ? "text-[oklch(0.88_0.22_140)]"
-              : creator.delta < 0
-              ? "text-[oklch(0.65_0.25_25)]"
-              : "text-muted-foreground"
-          }`}
-        >
-          {creator.delta > 0 ? "+" : ""}
-          {creator.delta} live
-        </div>
+        {creator.delta !== 0 && (
+          <div
+            className={`text-[10px] tabular-nums ${
+              creator.delta > 0
+                ? "text-[oklch(0.88_0.22_140)]"
+                : creator.delta < 0
+                ? "text-[oklch(0.65_0.25_25)]"
+                : "text-muted-foreground"
+            }`}
+          >
+            {creator.delta > 0 ? "+" : ""}
+            {creator.delta} live
+          </div>
+        )}
       </div>
 
       <div className="hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground tabular-nums">

@@ -10,6 +10,7 @@ import { Podium } from "@/components/leaderboard/Podium";
 import { LeaderboardRow } from "@/components/leaderboard/LeaderboardRow";
 import { CreatorModal } from "@/components/leaderboard/CreatorModal";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { fetchChannels } from "@/lib/youtube.functions";
 
 export const Route = createFileRoute("/")({
@@ -114,7 +115,7 @@ function Index() {
           </div>
         </motion.section>
 
-        <Podium top3={top3} onSelect={setSelected} />
+        {isLoading ? <PodiumSkeleton /> : <Podium top3={top3} onSelect={setSelected} />}
 
         <motion.section 
           initial={{ opacity: 0, y: 20 }}
@@ -157,15 +158,11 @@ function Index() {
             <span className="text-center">Trend</span>
           </div>
           <AnimatePresence>
-            {filtered.map((c) => (
+            {!isLoading && filtered.map((c) => (
               <LeaderboardRow key={c.id} creator={c} onClick={() => setSelected(c)} />
             ))}
           </AnimatePresence>
-          {isLoading && (
-            <div className="glass rounded-2xl p-10 text-center text-muted-foreground flex items-center justify-center gap-2">
-              <Loader2 className="size-4 animate-spin" /> Fetching live data from YouTube…
-            </div>
-          )}
+          {isLoading && <LeaderboardSkeleton />}
           {isError && (
             <div className="glass rounded-2xl p-10 text-center space-y-3">
               <p className="text-muted-foreground">Couldn't reach YouTube. Try again.</p>
@@ -229,5 +226,60 @@ function SelectChip({
         ))}
       </select>
     </label>
+  );
+}
+
+function PodiumSkeleton() {
+  return (
+    <div className="grid grid-cols-3 gap-3 sm:gap-6 items-end">
+      {[1, 0, 2].map((idx) => {
+        const height = idx === 0 ? "h-44" : idx === 1 ? "h-32" : "h-28";
+        return (
+          <div key={idx} className="glass-strong rounded-2xl p-4 sm:p-6 text-center animate-pulse">
+            <div className="flex flex-col items-center gap-3">
+              <Skeleton className="size-16 sm:size-20 rounded-full" />
+              <div className="w-full space-y-2 flex flex-col items-center">
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-3 w-1/2" />
+                <Skeleton className="h-6 w-3/4 mt-2" />
+              </div>
+              <Skeleton className={`w-full ${height} rounded-xl`} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function LeaderboardSkeleton() {
+  return (
+    <>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="w-full glass rounded-2xl p-4 grid grid-cols-[40px_1fr_auto] sm:grid-cols-[48px_2fr_1fr_1fr_1fr_80px] gap-3 sm:gap-4 items-center">
+          <Skeleton className="h-6 w-6" />
+          <div className="flex items-center gap-3">
+            <Skeleton className="size-10 sm:size-12 rounded-full shrink-0" />
+            <div className="space-y-2 w-full">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+          </div>
+          <div className="hidden sm:flex gap-1">
+            <Skeleton className="h-4 w-16 rounded-full" />
+            <Skeleton className="h-4 w-12 rounded-full" />
+          </div>
+          <div className="hidden sm:block">
+            <Skeleton className="h-5 w-20 ml-auto" />
+          </div>
+          <div className="hidden sm:block">
+            <Skeleton className="h-5 w-16" />
+          </div>
+          <div className="hidden sm:block">
+            <Skeleton className="h-4 w-4 mx-auto" />
+          </div>
+        </div>
+      ))}
+    </>
   );
 }
