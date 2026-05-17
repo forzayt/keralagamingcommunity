@@ -94,16 +94,21 @@ function Index() {
               </p>
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs">
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-[oklch(0.88_0.22_140)] opacity-60 animate-ping" />
-              <span className="relative inline-flex rounded-full size-2 bg-[oklch(0.88_0.22_140)]" />
-            </span>
-            <Radio className="size-3" />
-            <a href="https://www.tvaxkva.com/" target="_blank" rel="noopener noreferrer">
-              {" "}
-              Streaming Now
-            </a>
+          <div className="flex items-center gap-3">
+            <button className="hidden sm:flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all hover:scale-105 text-xs font-bold shadow-[0_0_15px_oklch(0.72_0.22_160/0.15)] hover:shadow-[0_0_20px_oklch(0.72_0.22_160/0.3)]">
+              Are u a gamer ?
+            </button>
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs">
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-[oklch(0.88_0.22_140)] opacity-60 animate-ping" />
+                <span className="relative inline-flex rounded-full size-2 bg-[oklch(0.88_0.22_140)]" />
+              </span>
+              <Radio className="size-3" />
+              <a href="https://www.tvaxkva.com/" target="_blank" rel="noopener noreferrer">
+                {" "}
+                Streaming Now
+              </a>
+            </div>
           </div>
         </div>
       </header>

@@ -52,9 +52,14 @@ export function Podium({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: idx * 0.1 }}
             onClick={() => onSelect(creator)}
-            className={`glass-strong rounded-2xl p-4 sm:p-6 text-left hover:scale-[1.02] transition-transform ${meta.glow} ${isFirst ? "animate-pulse-glow" : ""}`}
+            className={`relative glass-strong rounded-2xl text-left hover:scale-[1.02] transition-transform`}
           >
-            <div className="flex flex-col items-center gap-3">
+            {/* Hardware-accelerated glow layer instead of expensive box-shadow animation */}
+            <div 
+              className={`absolute inset-0 rounded-2xl pointer-events-none ${meta.glow} ${isFirst ? "animate-pulse" : "opacity-100"}`}
+            />
+            
+            <div className="relative p-4 sm:p-6 flex flex-col items-center gap-3">
               <div className="relative">
                 <div
                   className="absolute -inset-1 rounded-full opacity-60 blur-md"
