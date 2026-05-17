@@ -1,22 +1,4 @@
-import { createServerFn } from "@tanstack/react-start";
 import type { Creator } from "@/components/leaderboard/types";
-
-function parseCount(raw: string): number {
-  const s = raw.replace(/,/g, "").trim();
-  const m = s.match(/^([\d.]+)\s*([KMB]?)/i);
-  if (!m) return 0;
-  const n = parseFloat(m[1]);
-  const mult: Record<string, number> = { K: 1e3, M: 1e6, B: 1e9 };
-  return Math.round(n * (mult[m[2]?.toUpperCase()] ?? 1));
-}
-
-function pick(html: string, patterns: RegExp[]): string | null {
-  for (const re of patterns) {
-    const m = html.match(re);
-    if (m && m[1]) return m[1];
-  }
-  return null;
-}
 
 function deriveNiche(name: string, description: string, keywords: string | null): string[] {
   const haystack = `${name} ${description} ${keywords ?? ""}`.toLowerCase();
@@ -52,81 +34,50 @@ function deriveNiche(name: string, description: string, keywords: string | null)
   return Array.from(found).slice(0, 3);
 }
 
-async function fetchChannel(url: string, idx: number): Promise<Creator | null> {
+async function fetchChannel(url: string, idx: number, apiKey: string): Promise<Creator | null> {
   try {
     const base = url.replace(/\/+$/, "");
-    const aboutUrl = `${base}/about?hl=en&gl=US`;
-    const res = await fetch(aboutUrl, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-        "Accept-Language": "en-US,en;q=0.9",
-      },
-    });
-    if (!res.ok) return null;
-    const html = await res.text();
-
-    const name =
-      pick(html, [
-        /<meta property="og:title" content="([^"]+)"/,
-        /"channelMetadataRenderer":\{"title":"([^"]+)"/,
-      ]) ?? base.split("@").pop() ?? "Unknown";
-
-    const avatar =
-      pick(html, [
-        /<meta property="og:image" content="([^"]+)"/,
-        /"avatar":\{"thumbnails":\[\{"url":"([^"]+)"/,
-      ]) ?? "";
-
-    const description =
-      pick(html, [
-        /<meta property="og:description" content="([^"]+)"/,
-        /<meta name="description" content="([^"]+)"/,
-      ]) ?? "";
-
-    const keywords = pick(html, [/<meta name="keywords" content="([^"]+)"/]);
-
-    const subsRaw =
-      pick(html, [
-        /"subscriberCountText":\{[^}]*"simpleText":"([^"]+)"/,
-        /"subscriberCountText":\{"accessibility":\{"accessibilityData":\{"label":"([^"]+)"/,
-        /"metadataParts":\[[^\]]*"text":\{"content":"([\d.,]+[KMB]?) subscribers"/,
-        /([\d.,]+[KMB]?)\s+subscribers/i,
-      ]) ?? "0";
-
-    const viewsRaw =
-      pick(html, [
-        /"viewCountText":\{"simpleText":"([^"]+)"/,
-        /"viewCount":"([\d]+)"/,
-        /([\d,]+)\s+views/i,
-      ]) ?? "0";
-
-    const videosRaw =
-      pick(html, [
-        /"videoCountText":\{"runs":\[\{"text":"([^"]+)"/,
-        /"videosCountText":\{"runs":\[\{"text":"([^"]+)"/,
-        /"videoCount":"([\d]+)"/,
-        /([\d,]+)\s+videos/i,
-      ]) ?? "0";
-
-    const verified = /"BADGE_STYLE_TYPE_VERIFIED"|"VERIFIED_ARTIST"/.test(html);
-
+    let apiUrl = "";
+    let handle = "";
+    
     const handleMatch = base.match(/@([^/]+)/);
-    const handle = handleMatch ? `@${handleMatch[1]}` : base.replace(/^https?:\/\//, "");
+    if (handleMatch) {
+      handle = `@${handleMatch[1]}`;
+      // API v3 uses forHandle parameter without the @ symbol
+      apiUrl = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&forHandle=${handleMatch[1]}&key=${apiKey}`;
+    } else {
+      const idMatch = base.match(/channel\/([^/]+)/);
+      if (idMatch) {
+        handle = base.replace(/^https?:\/\//, "");
+        apiUrl = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${idMatch[1]}&key=${apiKey}`;
+      } else {
+        return null;
+      }
+    }
+
+    const res = await fetch(apiUrl);
+    if (!res.ok) return null;
+    const data = await res.json();
+    
+    if (!data.items || data.items.length === 0) return null;
+    
+    const channel = data.items[0];
+    const snippet = channel.snippet;
+    const stats = channel.statistics;
 
     return {
       id: handle.toLowerCase() + "-" + idx,
-      name,
+      name: snippet.title,
       handle,
       url: base,
-      avatar,
-      subscribers: parseCount(subsRaw),
-      views: parseCount(viewsRaw),
-      videos: parseCount(videosRaw),
-      niche: deriveNiche(name, description, keywords),
-      verified,
+      avatar: snippet.thumbnails?.high?.url || snippet.thumbnails?.default?.url || "",
+      subscribers: parseInt(stats.subscriberCount || "0", 10),
+      views: parseInt(stats.viewCount || "0", 10),
+      videos: parseInt(stats.videoCount || "0", 10),
+      niche: deriveNiche(snippet.title, snippet.description, null),
+      verified: true, // You can assume true for large channels, or leave false. YouTube API doesn't provide a direct flag.
       trending: "up",
-      description,
+      description: snippet.description,
     };
   } catch (e) {
     console.error("fetchChannel failed", url, e);
@@ -134,12 +85,16 @@ async function fetchChannel(url: string, idx: number): Promise<Creator | null> {
   }
 }
 
-export const fetchChannels = createServerFn({ method: "POST" })
-  .inputValidator((data: { urls: string[] }) => {
-    if (!Array.isArray(data?.urls)) throw new Error("urls must be an array");
-    return { urls: data.urls.slice(0, 50).filter((u) => typeof u === "string") };
-  })
-  .handler(async ({ data }) => {
-    const results = await Promise.all(data.urls.map((u, i) => fetchChannel(u, i)));
-    return results.filter((c): c is Creator => c !== null);
-  });
+export const fetchChannels = async (data: { urls: string[] }): Promise<Creator[]> => {
+  if (!Array.isArray(data?.urls)) throw new Error("urls must be an array");
+  
+  const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY;
+  if (!apiKey) {
+    console.error("VITE_YOUTUBE_API_KEY is not defined in your environment variables.");
+    return [];
+  }
+
+  const validUrls = data.urls.slice(0, 50).filter((u) => typeof u === "string");
+  const results = await Promise.all(validUrls.map((u, i) => fetchChannel(u, i, apiKey)));
+  return results.filter((c): c is Creator => c !== null);
+};

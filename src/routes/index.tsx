@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { Search, Filter, Gamepad2, Trophy, Radio, Loader2 } from "lucide-react";
 import creatorUrls from "@/data/creators.json";
 import type { LiveCreator } from "@/components/leaderboard/types";
@@ -30,10 +29,9 @@ const urls = creatorUrls as string[];
 type SortKey = "subscribers" | "views" | "videos";
 
 function Index() {
-  const callFetch = useServerFn(fetchChannels);
   const { data: seed = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["channels", urls],
-    queryFn: () => callFetch({ data: { urls } }),
+    queryFn: () => fetchChannels({ urls }),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
