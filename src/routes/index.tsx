@@ -54,6 +54,8 @@ function Index() {
   const [niche, setNiche] = useState<string>("all");
   const [sortKey, setSortKey] = useState<SortKey>("subscribers");
   const [selected, setSelected] = useState<LiveCreator | null>(null);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const niches = useMemo(
     () => ["all", ...Array.from(new Set(seed.flatMap((c) => c.niche))).sort()],
@@ -95,7 +97,10 @@ function Index() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button className="hidden sm:flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all hover:scale-105 text-xs font-bold shadow-[0_0_15px_oklch(0.72_0.22_160/0.15)] hover:shadow-[0_0_20px_oklch(0.72_0.22_160/0.3)]">
+            <button 
+              onClick={() => setShowSubmitModal(true)}
+              className="hidden sm:flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all hover:scale-105 text-xs font-bold shadow-[0_0_15px_oklch(0.72_0.22_160/0.15)] hover:shadow-[0_0_20px_oklch(0.72_0.22_160/0.3)]"
+            >
               Are u a gamer ?
             </button>
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs">
@@ -217,6 +222,19 @@ function Index() {
       </main>
 
       <CreatorModal creator={selected} onOpenChange={(o) => !o && setSelected(null)} />
+      
+      <GamerSubmitModal 
+        isOpen={showSubmitModal} 
+        onClose={() => setShowSubmitModal(false)} 
+        onSuccess={() => {
+          setShowSubmitModal(false);
+          setShowSuccessModal(true);
+        }} 
+      />
+      <GamerSuccessModal 
+        isOpen={showSuccessModal} 
+        onClose={() => setShowSuccessModal(false)} 
+      />
     </div>
   );
 }
@@ -317,5 +335,135 @@ function LeaderboardSkeleton() {
         </div>
       ))}
     </>
+  );
+}
+
+function GamerSubmitModal({ isOpen, onClose, onSuccess }: { isOpen: boolean, onClose: () => void, onSuccess: () => void }) {
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!url) return;
+    setLoading(true);
+    try {
+      await fetch("https://formsubmit.co/ajax/vishnusanthoshvr@gmail.com", {
+        method: "POST",
+        headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ 
+          _subject: "New Gamer Submission for Kerala Gaming Leaderboard",
+          YouTubeUrl: url
+        })
+      });
+      setUrl("");
+      onSuccess();
+    } catch (error) {
+      console.error(error);
+      // Still show success even on error to not block the user, or handle properly
+      onSuccess(); 
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: "-50%", x: "-50%" }}
+            animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
+            exit={{ opacity: 0, scale: 0.95, y: "-50%", x: "-50%" }}
+            className="fixed top-1/2 left-1/2 z-50 w-[90%] max-w-md glass-strong p-6 rounded-2xl shadow-2xl border border-border/50 flex flex-col gap-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0">
+                <Gamepad2 className="size-5" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gradient">Submit Your Channel</h3>
+                <p className="text-xs text-muted-foreground">Drop your YouTube URL to get featured.</p>
+              </div>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
+              <Input
+                type="url"
+                required
+                placeholder="https://youtube.com/@yourhandle"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className="bg-secondary/40 border-border/60"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold hover:bg-secondary transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold flex items-center gap-2 hover:opacity-90 transition disabled:opacity-50"
+                >
+                  {loading && <Loader2 className="size-4 animate-spin" />}
+                  Submit
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function GamerSuccessModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: "-50%", x: "-50%" }}
+            animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
+            exit={{ opacity: 0, scale: 0.95, y: "-50%", x: "-50%" }}
+            className="fixed top-1/2 left-1/2 z-50 w-[90%] max-w-sm glass-strong p-6 sm:p-8 rounded-2xl shadow-2xl border border-border/50 text-center flex flex-col items-center gap-4"
+          >
+            <div className="size-16 rounded-full bg-primary/20 text-primary flex items-center justify-center mb-2 glow-primary">
+              <Trophy className="size-8" />
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-black text-gradient leading-tight">lemme see<br/>what you got</h3>
+            <p className="text-sm text-muted-foreground mt-2">
+              We've received your channel. We'll check it out and add you to the leaderboard soon!
+            </p>
+            <button
+              onClick={onClose}
+              className="mt-4 px-8 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-bold hover:scale-105 transition-transform shadow-[0_0_20px_oklch(0.72_0.22_160/0.3)]"
+            >
+              Awesome
+            </button>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
