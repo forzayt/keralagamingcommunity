@@ -46,11 +46,25 @@ function Index() {
   } = useQuery({
     queryKey: ["channels", urls],
     queryFn: () => fetchChannels({ urls }),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours client-side cache
     refetchOnWindowFocus: false,
   });
 
-  const live = useLiveCreators(seed);
+  const { data: liveStatus = [] } = useQuery({
+    queryKey: ["live-status"],
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/live");
+        if (!res.ok) return [];
+        return (await res.json()) as { handle: string; isLive: boolean }[];
+      } catch (e) {
+        return [];
+      }
+    },
+    refetchInterval: 60 * 1000, // Update live status every minute
+  });
+
+  const live = useLiveCreators(seed, liveStatus);
   const [query, setQuery] = useState("");
   const [btnTextIdx, setBtnTextIdx] = useState(0);
   const buttonTexts = [

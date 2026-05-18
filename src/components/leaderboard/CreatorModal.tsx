@@ -9,6 +9,7 @@ import {
   Tag,
   Youtube,
   Gamepad2,
+  Radio,
 } from "lucide-react";
 import type { LiveCreator } from "./types";
 import { formatNumber, formatFull } from "@/lib/format";
@@ -61,6 +62,11 @@ export function CreatorModal({
                   <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="text-2xl font-bold">{creator.name}</h2>
                     {creator.verified && <BadgeCheck className="size-5 text-primary" />}
+                    {creator.isLive && (
+                      <span className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20 text-[10px] font-black animate-pulse">
+                        <Radio className="size-3" /> LIVE NOW
+                      </span>
+                    )}
                     <span className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider bg-primary/15 text-primary border border-primary/30">
                       Rank #{creator.rank}
                     </span>

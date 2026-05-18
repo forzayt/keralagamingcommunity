@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowUp, ArrowDown, Minus, BadgeCheck, TrendingUp, Eye } from "lucide-react";
+import { ArrowUp, ArrowDown, Minus, BadgeCheck, TrendingUp, Eye, Radio } from "lucide-react";
 import type { LiveCreator } from "./types";
 import { formatNumber } from "@/lib/format";
 
@@ -50,6 +50,11 @@ export function LeaderboardRow({
             <div className="flex items-center gap-1.5">
               <span className="font-semibold truncate">{creator.name}</span>
               {creator.verified && <BadgeCheck className="size-3.5 text-primary shrink-0" />}
+              {creator.isLive && (
+                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-red-500/10 text-red-500 border border-red-500/20 text-[9px] font-black animate-pulse">
+                  <Radio className="size-2.5" /> LIVE
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="truncate">{creator.handle}</span>

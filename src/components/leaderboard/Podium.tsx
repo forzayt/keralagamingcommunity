@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Crown, Trophy, Medal, TrendingUp, BadgeCheck } from "lucide-react";
+import { Crown, Trophy, Medal, TrendingUp, BadgeCheck, Radio } from "lucide-react";
 import type { LiveCreator } from "./types";
 import { formatNumber } from "@/lib/format";
 
@@ -82,6 +82,13 @@ export function Podium({
                   <span className="font-bold text-sm sm:text-base truncate">{creator.name}</span>
                   {creator.verified && <BadgeCheck className="size-3.5 text-primary shrink-0" />}
                 </div>
+                {creator.isLive && (
+                  <div className="flex justify-center mt-1">
+                    <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-red-500/10 text-red-500 border border-red-500/20 text-[9px] font-black animate-pulse">
+                      <Radio className="size-2.5" /> LIVE
+                    </span>
+                  </div>
+                )}
                 <div className="text-xs text-muted-foreground truncate">{creator.handle}</div>
                 <div className="mt-2 text-lg sm:text-xl font-bold text-gradient tabular-nums">
                   {formatNumber(creator.subscribers)}
