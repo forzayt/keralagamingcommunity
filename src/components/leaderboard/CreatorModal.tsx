@@ -7,28 +7,12 @@ import {
   Film,
   Users,
   Tag,
-  Calendar,
-  TrendingUp,
   Youtube,
+  Gamepad2,
 } from "lucide-react";
 import type { LiveCreator } from "./types";
 import { formatNumber, formatFull } from "@/lib/format";
 
-function buildGrowth(seed: string): { day: string; value: number }[] {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-  const rng = () => {
-    h = (h * 1664525 + 1013904223) >>> 0;
-    return (h & 0xffff) / 0xffff;
-  };
-  const days = ["M", "T", "W", "T", "F", "S", "S"];
-  let v = 60 + rng() * 20;
-  return days.map((d) => {
-    v += (rng() - 0.4) * 25;
-    v = Math.max(20, Math.min(100, v));
-    return { day: d, value: v };
-  });
-}
 
 export function CreatorModal({
   creator,
@@ -37,8 +21,19 @@ export function CreatorModal({
   creator: LiveCreator | null;
   onOpenChange: (open: boolean) => void;
 }) {
-  const growth = useMemo(() => (creator ? buildGrowth(creator.id) : []), [creator]);
-  const max = Math.max(...growth.map((g) => g.value), 1);
+
+  const avgViews = useMemo(() => {
+    if (!creator || creator.videos <= 0) return 0;
+    return Math.round(creator.views / creator.videos);
+  }, [creator]);
+
+  const tier = useMemo(() => {
+    if (!creator) return "Rising Star";
+    if (creator.subscribers >= 1_000_000) return "Legendary";
+    if (creator.subscribers >= 500_000) return "Grandmaster";
+    if (creator.subscribers >= 100_000) return "Master";
+    return "Rising Star";
+  }, [creator]);
 
   return (
     <Dialog open={!!creator} onOpenChange={onOpenChange}>
@@ -105,30 +100,31 @@ export function CreatorModal({
                 <StatCard icon={Tag} label="Niche" value={creator.niche[0] ?? "Gaming"} />
               </div>
 
-              <div className="glass rounded-xl p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2 text-sm font-semibold">
-                    <TrendingUp className="size-4 text-primary" /> 7-day growth simulation
-                  </div>
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Calendar className="size-3" /> last week
-                  </span>
+
+              {/* Advanced Insights Section */}
+              <div className="glass rounded-xl p-4 space-y-3">
+                <div className="text-sm font-semibold flex items-center gap-2">
+                  <Gamepad2 className="size-4 text-primary" /> Channel Insights & Analytics
                 </div>
-                <div className="flex items-end gap-2 h-28">
-                  {growth.map((g, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                      <div
-                        className="w-full rounded-t-md transition-all"
-                        style={{
-                          height: `${(g.value / max) * 100}%`,
-                          background:
-                            "linear-gradient(180deg, oklch(0.72 0.22 160), oklch(0.68 0.25 320))",
-                          boxShadow: "0 0 12px oklch(0.72 0.22 160 / 0.4)",
-                        }}
-                      />
-                      <span className="text-[10px] text-muted-foreground">{g.day}</span>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-secondary/20 rounded-lg p-3 border border-border/40">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Avg. Views / Video</div>
+                    <div className="mt-1 font-bold text-xs sm:text-sm tabular-nums text-gradient truncate">
+                      {avgViews > 0 ? formatNumber(avgViews) : "N/A"}
                     </div>
-                  ))}
+                  </div>
+                  <div className="bg-secondary/20 rounded-lg p-3 border border-border/40">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Creator Tier</div>
+                    <div className="mt-1 font-bold text-xs sm:text-sm text-gradient truncate">
+                      {tier}
+                    </div>
+                  </div>
+                  <div className="bg-secondary/20 rounded-lg p-3 border border-border/40">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Views / Subscriber</div>
+                    <div className="mt-1 font-bold text-xs sm:text-sm tabular-nums text-gradient truncate">
+                      {(creator.views / creator.subscribers).toFixed(1)}x
+                    </div>
+                  </div>
                 </div>
               </div>
 

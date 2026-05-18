@@ -70,6 +70,7 @@ function Index() {
   const [selected, setSelected] = useState<LiveCreator | null>(null);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   const niches = useMemo(
     () => ["all", ...Array.from(new Set(seed.flatMap((c) => c.niche))).sort()],
@@ -207,13 +208,13 @@ function Index() {
           transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.2 }}
           className="space-y-2"
         >
-          <div className="hidden sm:grid grid-cols-[48px_2fr_1fr_1fr_1fr_80px] gap-4 px-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          <div className="hidden sm:grid grid-cols-[48px_2fr_1fr_1fr_1fr_120px] gap-4 px-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
             <span>#</span>
             <span>Creator</span>
             <span>Niche</span>
             <span className="text-right">Subscribers</span>
             <span>Views</span>
-            <span className="text-center">Trend</span>
+            <span className="text-right">Action</span>
           </div>
           <AnimatePresence>
             {!isLoading &&
@@ -240,8 +241,9 @@ function Index() {
           )}
         </motion.section>
 
-        <footer className="pt-12 pb-8 flex flex-col items-center gap-1 text-center text-xs text-muted-foreground">
+        <footer className="pt-12 pb-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-center text-[11px] sm:text-xs text-muted-foreground">
           <span>Built by a gamer for gamers.</span>
+          <span className="opacity-40">|</span>
           <a 
             href="https://github.com/forzayt" 
             target="_blank" 
@@ -250,6 +252,15 @@ function Index() {
           >
             Follow me on github | Forzayt
           </a>
+          <span className="opacity-40">|</span>
+          <button 
+            onClick={() => setShowPrivacyModal(true)}
+            className="hover:text-primary transition-colors hover:underline cursor-pointer"
+          >
+            Privacy Policy
+          </button>
+          <span className="opacity-40">|</span>
+          <span>© 2026 All rights reserved</span>
         </footer>
       </main>
 
@@ -266,6 +277,10 @@ function Index() {
       <GamerSuccessModal 
         isOpen={showSuccessModal} 
         onClose={() => setShowSuccessModal(false)} 
+      />
+      <PrivacyPolicyModal 
+        isOpen={showPrivacyModal} 
+        onClose={() => setShowPrivacyModal(false)} 
       />
     </div>
   );
@@ -528,6 +543,67 @@ function GamerSuccessModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
               className="mt-4 px-8 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-bold hover:scale-105 transition-transform shadow-[0_0_20px_oklch(0.72_0.22_160/0.3)]"
             >
               Awesome
+            </button>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function PrivacyPolicyModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: "-50%", x: "-50%" }}
+            animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
+            exit={{ opacity: 0, scale: 0.95, y: "-50%", x: "-50%" }}
+            className="fixed top-1/2 left-1/2 z-50 w-[90%] max-w-lg glass-strong p-6 sm:p-8 rounded-2xl shadow-2xl border border-border/50 flex flex-col gap-4 max-h-[85vh] overflow-y-auto"
+          >
+            <h3 className="text-2xl font-black text-gradient">Privacy Policy</h3>
+            <p className="text-xs text-muted-foreground uppercase tracking-widest">Last updated: May 2026</p>
+            
+            <div className="space-y-4 text-sm text-muted-foreground leading-relaxed mt-2 text-left">
+              <p>
+                Welcome to the Kerala Gaming Community Leaderboard. Your privacy is extremely important to us. Here is how we handle and protect data in our esports portal:
+              </p>
+              
+              <div className="space-y-2">
+                <h4 className="font-bold text-foreground">1. Public Channel Metrics</h4>
+                <p>
+                  We fetch and display public channel metrics directly from the official YouTube API (including subscriber counts, view counts, video counts, and basic creator metadata). This data is completely public and accessible on YouTube.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="font-bold text-foreground">2. Channel Submissions</h4>
+                <p>
+                  When you submit a channel link for review, we securely store the URL in our database to review and list qualifying gaming creators. We do not require or collect personal identity details or email addresses.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="font-bold text-foreground">3. Tracking & Advertising</h4>
+                <p>
+                  We do not run tracking cookies, sell your data to third-party brokers, or display intrusive advertisements. The portal is 100% community-driven and dedicated to showcasing regional esports talents.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="mt-6 w-full py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-bold hover:scale-105 transition-transform shadow-[0_0_20px_oklch(0.72_0.22_160/0.3)]"
+            >
+              Close
             </button>
           </motion.div>
         </>

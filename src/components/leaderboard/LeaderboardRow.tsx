@@ -27,7 +27,7 @@ export function LeaderboardRow({
       layoutId={`row-${creator.id}`}
       transition={{ type: "spring", stiffness: 260, damping: 28 }}
       onClick={onClick}
-      className="group w-full glass rounded-2xl p-4 grid grid-cols-[40px_1fr_auto] sm:grid-cols-[48px_2fr_1fr_1fr_1fr_80px] gap-3 sm:gap-4 items-center text-left hover:border-primary/40 hover:bg-card/80 transition-all"
+      className="group w-full glass rounded-2xl p-4 grid grid-cols-[40px_1fr_auto] sm:grid-cols-[48px_2fr_1fr_1fr_1fr_120px] gap-3 sm:gap-4 items-center text-left hover:border-primary/40 hover:bg-card/80 transition-all"
     >
       <div className="flex items-center gap-1">
         <span className="font-black text-lg sm:text-xl text-gradient tabular-nums w-7 text-center">
@@ -95,12 +95,13 @@ export function LeaderboardRow({
         {formatNumber(creator.views)}
       </div>
 
-      <div className="text-right sm:text-center">
-        {creator.trending === "up" ? (
-          <TrendingUp className="size-4 ml-auto sm:mx-auto text-[oklch(0.88_0.22_140)]" />
-        ) : (
-          <span className="text-muted-foreground text-xs">—</span>
+      <div className="flex items-center justify-end gap-2.5 text-right">
+        {creator.trending === "up" && (
+          <TrendingUp className="size-4 text-[oklch(0.88_0.22_140)] shrink-0" />
         )}
+        <span className="px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-black shadow-[0_0_15px_oklch(0.72_0.22_160/0.05)] group-hover:bg-primary/20 group-hover:border-primary/30 transition-all group-hover:scale-[1.03]">
+          View
+        </span>
       </div>
 
       <div className="sm:hidden col-span-3 flex items-center justify-between text-xs">
