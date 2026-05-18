@@ -12,6 +12,7 @@ import { CreatorModal } from "@/components/leaderboard/CreatorModal";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchChannels } from "@/lib/youtube.functions";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -347,20 +348,11 @@ function GamerSubmitModal({ isOpen, onClose, onSuccess }: { isOpen: boolean, onC
     if (!url) return;
     setLoading(true);
     try {
-      const response = await fetch("/api/submit", {
-        method: "POST",
-        headers: { 
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({ 
-          YouTubeUrl: url
-        })
-      });
+      const { error: submitError } = await supabase
+        .from('submissions')
+        .insert([{ youtube_url: url }]);
 
-      if (!response.ok) {
-        throw new Error("Failed to submit");
-      }
+      if (submitError) throw submitError;
       setUrl("");
       onSuccess();
     } catch (error) {
