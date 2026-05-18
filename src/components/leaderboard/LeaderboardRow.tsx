@@ -108,9 +108,21 @@ export function LeaderboardRow({
           {creator.trending === "up" && (
             <TrendingUp className="size-4 text-[oklch(0.88_0.22_140)] shrink-0" />
           )}
-          <span className="px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-black shadow-[0_0_15px_oklch(0.72_0.22_160/0.05)] group-hover:bg-primary/20 group-hover:border-primary/30 transition-all group-hover:scale-[1.03]">
-            View
-          </span>
+          {creator.isLive ? (
+            <a
+              href={`${creator.url}/live`}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="px-3 py-1.5 rounded-xl bg-red-500 text-white border border-red-600 text-xs font-black shadow-[0_0_15px_rgba(239,68,68,0.3)] hover:bg-red-600 transition-all hover:scale-[1.05] flex items-center gap-1.5"
+            >
+              <Radio className="size-3" /> Watch
+            </a>
+          ) : (
+            <span className="px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-black shadow-[0_0_15px_oklch(0.72_0.22_160/0.05)] group-hover:bg-primary/20 group-hover:border-primary/30 transition-all group-hover:scale-[1.03]">
+              View
+            </span>
+          )}
         </div>
 
         <div className="sm:hidden col-span-3 flex items-center justify-between text-xs">

@@ -35,14 +35,9 @@ function deriveNiche(name: string, description: string, keywords: string | null)
 }
 
 async function checkIsLive(handle: string): Promise<boolean> {
-  try {
-    const url = `https://www.youtube.com/${handle}/live`;
-    const res = await fetch(url);
-    const text = await res.text();
-    return text.includes('isLiveNow":true') || text.includes('hlsManifestUrl') || text.includes('liveBroadcastDetails');
-  } catch (e) {
-    return false;
-  }
+  // Client-side scraping is blocked by CORS. 
+  // We return false here and rely on the /api/live endpoint for real data.
+  return false;
 }
 
 async function fetchChannel(url: string, idx: number, apiKey: string): Promise<Creator | null> {

@@ -136,14 +136,25 @@ export function CreatorModal({
 
               <div className="flex flex-wrap gap-2">
                 <SocialLink icon={Youtube} href={creator.url} label="YouTube Channel" />
-                <a
-                  href={creator.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold text-sm hover:opacity-90 transition"
-                >
-                  Visit Channel <ExternalLink className="size-3.5" />
-                </a>
+                {creator.isLive ? (
+                  <a
+                    href={`${creator.url}/live`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ml-auto inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition shadow-[0_0_20px_rgba(220,38,38,0.4)] animate-pulse"
+                  >
+                    <Radio className="size-4" /> Watch Stream Now
+                  </a>
+                ) : (
+                  <a
+                    href={creator.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold text-sm hover:opacity-90 transition"
+                  >
+                    Visit Channel <ExternalLink className="size-3.5" />
+                  </a>
+                )}
               </div>
             </div>
           </div>

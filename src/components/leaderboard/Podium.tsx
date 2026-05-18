@@ -98,14 +98,25 @@ export function Podium({
                 </div>
               </div>
               <div
-                className={`w-full ${meta.height} rounded-xl flex items-center justify-center text-3xl sm:text-5xl font-black`}
+                className={`w-full ${meta.height} rounded-xl flex flex-col items-center justify-center gap-2`}
                 style={{
                   background: `linear-gradient(180deg, ${meta.color}, transparent 90%)`,
                   color: "oklch(0.12 0.02 270)",
                   opacity: 0.85,
                 }}
               >
-                {creator.rank}
+                <span className="text-3xl sm:text-5xl font-black">{creator.rank}</span>
+                {creator.isLive && (
+                  <a
+                    href={`${creator.url}/live`}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="px-4 py-1.5 rounded-lg bg-red-600 text-white text-[10px] font-black uppercase tracking-wider shadow-lg hover:bg-red-700 transition-colors flex items-center gap-1.5"
+                  >
+                    <Radio className="size-3" /> Watch Live
+                  </a>
+                )}
               </div>
               {creator.trending === "up" && (
                 <div className="flex items-center gap-1 text-xs text-[oklch(0.88_0.22_140)]">
