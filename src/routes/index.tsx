@@ -182,7 +182,7 @@ function Index() {
                 </motion.span>
               </AnimatePresence>
             </button>
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs">
+            {/* <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs">
               <span className="relative flex size-2">
                 <span className="absolute inline-flex h-full w-full rounded-full bg-[oklch(0.88_0.22_140)] opacity-60 animate-ping" />
                 <span className="relative inline-flex rounded-full size-2 bg-[oklch(0.88_0.22_140)]" />
@@ -192,7 +192,7 @@ function Index() {
                 {" "}
                 Streaming Now
               </a>
-            </div>
+            </div> */}
 
             {/* Mobile hamburger menu toggle */}
             <button
@@ -248,7 +248,7 @@ function Index() {
                     </AnimatePresence>
                   </button>
 
-                  <div className="w-full flex items-center gap-2 px-3 py-2.5 rounded-full glass border border-border/20 text-xs justify-center">
+                  {/* <div className="w-full flex items-center gap-2 px-3 py-2.5 rounded-full glass border border-border/20 text-xs justify-center">
                     <span className="relative flex size-2">
                       <span className="absolute inline-flex h-full w-full rounded-full bg-[oklch(0.88_0.22_140)] opacity-60 animate-ping" />
                       <span className="relative inline-flex rounded-full size-2 bg-[oklch(0.88_0.22_140)]" />
@@ -257,7 +257,7 @@ function Index() {
                     <a href="https://www.tvaxkva.com/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                       Streaming Now
                     </a>
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="h-px bg-border/20 w-full" />
