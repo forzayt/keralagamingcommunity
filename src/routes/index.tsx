@@ -217,8 +217,16 @@ function Index() {
           )}
         </motion.section>
 
-        <footer className="pt-12 pb-8 text-center text-xs text-muted-foreground">
-          Built by a gamer for gamers.
+        <footer className="pt-12 pb-8 flex flex-col items-center gap-1 text-center text-xs text-muted-foreground">
+          <span>Built by a gamer for gamers.</span>
+          <a 
+            href="https://github.com/forzayt" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:text-primary transition-colors"
+          >
+            Follow me on github | Forzayt
+          </a>
         </footer>
       </main>
 
@@ -342,21 +350,50 @@ function LeaderboardSkeleton() {
 function GamerSubmitModal({ isOpen, onClose, onSuccess }: { isOpen: boolean, onClose: () => void, onSuccess: () => void }) {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url) return;
+    setError(null);
+
+    const trimmedUrl = url.trim();
+    const lowerUrl = trimmedUrl.toLowerCase();
+
+    // Validate YouTube URL
+    if (!lowerUrl.includes("youtube.com") && !lowerUrl.includes("youtu.be")) {
+      setError("Please enter a valid YouTube URL (youtube.com).");
+      return;
+    }
+
+    // Normalization helper to compare URLs
+    const normalize = (u: string) =>
+      u
+        .replace(/^(https?:\/\/)?(www\.)?/, "")
+        .replace(/\/$/, "")
+        .toLowerCase();
+
+    const normalizedInput = normalize(trimmedUrl);
+    const exists = (creatorUrls as string[]).some(
+      (existingUrl) => normalize(existingUrl) === normalizedInput
+    );
+
+    if (exists) {
+      setError("You are already on the leaderboard!");
+      return;
+    }
+
     setLoading(true);
     try {
       const { error: submitError } = await supabase
         .from('submissions')
-        .insert([{ youtube_url: url }]);
+        .insert([{ youtube_url: trimmedUrl }]);
 
       if (submitError) throw submitError;
       setUrl("");
       onSuccess();
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       // Still show success even on error to not block the user, or handle properly
       onSuccess(); 
     } finally {
@@ -392,14 +429,24 @@ function GamerSubmitModal({ isOpen, onClose, onSuccess }: { isOpen: boolean, onC
             </div>
             
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
-              <Input
-                type="url"
-                required
-                placeholder="https://youtube.com/@yourhandle"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="bg-secondary/40 border-border/60"
-              />
+              <div className="flex flex-col gap-1.5">
+                <Input
+                  type="url"
+                  required
+                  placeholder="https://youtube.com/@yourhandle"
+                  value={url}
+                  onChange={(e) => {
+                    setUrl(e.target.value);
+                    if (error) setError(null);
+                  }}
+                  className="bg-secondary/40 border-border/60"
+                />
+                {error && (
+                  <span className="text-red-500 text-xs font-semibold px-1">
+                    {error}
+                  </span>
+                )}
+              </div>
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
@@ -448,7 +495,10 @@ function GamerSuccessModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
             </div>
             <h3 className="text-2xl sm:text-3xl font-black text-gradient leading-tight">lemme see<br/>what you got</h3>
             <p className="text-sm text-muted-foreground mt-2">
-              We've received your channel. We'll check it out and add you to the leaderboard soon!
+              I've received your channel. I'll check it out and add you to the leaderboard soon!
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+            NB: I will update your channel ASAP - If im not under your GF's bed .
             </p>
             <button
               onClick={onClose}
