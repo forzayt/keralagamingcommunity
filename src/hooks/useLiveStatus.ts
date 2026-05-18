@@ -22,45 +22,63 @@ export function useLiveStatus(channelUrl: string) {
 
     async function checkStatus() {
       const liveUrl = `${channelUrl.replace(/\/$/, "")}/live`;
-      
+      const controllers: AbortController[] = [];
+
+      const fetchWithTimeout = async (url: string, timeout = 8000) => {
+        const controller = new AbortController();
+        controllers.push(controller);
+        const id = setTimeout(() => controller.abort(), timeout);
+        try {
+          const response = await fetch(url, { signal: controller.signal });
+          clearTimeout(id);
+          return response;
+        } catch (e) {
+          clearTimeout(id);
+          throw e;
+        }
+      };
+
       const fetchWithProxy = async (proxyFn: (url: string) => string, isAllOrigins: boolean) => {
         const proxyUrl = proxyFn(liveUrl);
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error(`Proxy failed: ${proxyUrl}`);
-        
-        if (isAllOrigins) {
-          const data = await response.json();
-          return data.contents;
+        try {
+          const response = await fetchWithTimeout(proxyUrl);
+          if (!response.ok) throw new Error(`Proxy failed: ${proxyUrl}`);
+          
+          let content = "";
+          if (isAllOrigins) {
+            const data = await response.json();
+            content = data.contents;
+          } else {
+            content = await response.text();
+          }
+
+          if (!content || content.length < 100) {
+            throw new Error("Empty or too short content from proxy");
+          }
+          return content;
+        } catch (err) {
+          throw err;
         }
-        return await response.text();
       };
 
       const proxies = [
         { fn: (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`, isAllOrigins: false },
         { fn: (url: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, isAllOrigins: true },
-        { fn: (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`, isAllOrigins: false }
+        { fn: (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`, isAllOrigins: false },
+        { fn: (url: string) => `https://api.cors.lol/?url=${encodeURIComponent(url)}`, isAllOrigins: false }
       ];
 
       try {
         setIsLoading(true);
-        let content = "";
-        let success = false;
-
-        for (const proxy of proxies) {
-          try {
-            content = await fetchWithProxy(proxy.fn, proxy.isAllOrigins);
-            if (content) {
-              success = true;
-              break;
-            }
-          } catch (e) {
-            console.warn(`Proxy failed, trying next...`, e);
-            continue;
-          }
-        }
-
-        if (!success) throw new Error("All proxies failed");
         
+        // Try all proxies in parallel and take the first one that succeeds
+        const content = await Promise.any(
+          proxies.map(proxy => fetchWithProxy(proxy.fn, proxy.isAllOrigins))
+        );
+
+        // Abort other pending requests
+        controllers.forEach(c => c.abort());
+
         // Check for indicators of a live stream in the page content
         const liveIndicator = content.includes('liveStreamabilityRenderer') || 
                              content.includes('"isLive":true') ||
@@ -72,18 +90,24 @@ export function useLiveStatus(channelUrl: string) {
           setIsLoading(false);
         }
       } catch (error) {
-        console.error("Error checking live status:", error);
         if (isMounted) {
+          console.error("Error checking live status:", error);
           statusCache[channelUrl] = { isLive: false, timestamp: Date.now() };
           setIsLive(false);
           setIsLoading(false);
         }
+      } finally {
+        controllers.forEach(c => c.abort());
       }
     }
 
     if (channelUrl) {
       checkStatus();
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [channelUrl]);
 
   return { isLive, isLoading };
