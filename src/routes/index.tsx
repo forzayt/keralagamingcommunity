@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Filter, Gamepad2, Trophy, Radio, Loader2 } from "lucide-react";
@@ -52,6 +52,19 @@ function Index() {
 
   const live = useLiveCreators(seed);
   const [query, setQuery] = useState("");
+  const [btnTextIdx, setBtnTextIdx] = useState(0);
+  const buttonTexts = [
+    "Are u a gamer ?",
+    "Did you know any gamer ?",
+    "Feel free to add here.."
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBtnTextIdx((prev) => (prev + 1) % buttonTexts.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
   const [niche, setNiche] = useState<string>("all");
   const [sortKey, setSortKey] = useState<SortKey>("subscribers");
   const [selected, setSelected] = useState<LiveCreator | null>(null);
@@ -100,9 +113,19 @@ function Index() {
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setShowSubmitModal(true)}
-              className="hidden sm:flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all hover:scale-105 text-xs font-bold shadow-[0_0_15px_oklch(0.72_0.22_160/0.15)] hover:shadow-[0_0_20px_oklch(0.72_0.22_160/0.3)]"
+              className="hidden sm:flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all hover:scale-105 text-xs font-bold shadow-[0_0_15px_oklch(0.72_0.22_160/0.15)] hover:shadow-[0_0_20px_oklch(0.72_0.22_160/0.3)] overflow-hidden min-w-[170px] justify-center"
             >
-              Are u a gamer ?
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={btnTextIdx}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {buttonTexts[btnTextIdx]}
+                </motion.span>
+              </AnimatePresence>
             </button>
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs">
               <span className="relative flex size-2">
@@ -423,7 +446,7 @@ function GamerSubmitModal({ isOpen, onClose, onSuccess }: { isOpen: boolean, onC
                 <Gamepad2 className="size-5" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-gradient">Submit Your Channel</h3>
+                <h3 className="text-xl font-bold text-gradient">Submit your or your fav channel</h3>
                 <p className="text-xs text-muted-foreground">Drop your YouTube URL to get featured.</p>
               </div>
             </div>
