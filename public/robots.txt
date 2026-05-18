@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://keralagamingcommunity.vercel.app/sitemap.xml

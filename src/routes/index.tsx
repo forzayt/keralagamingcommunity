@@ -17,17 +17,43 @@ import { supabase } from "@/lib/supabase";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Kerala Gaming Leaderboard — Live Creator Rankings" },
+      { title: "Kerala Gaming Leaderboard — Live YouTube Creator Rankings" },
       {
         name: "description",
         content:
-          "Real-time leaderboard of Kerala's top YouTube gaming creators with live subscriber tracking, podium rankings, and esports-grade analytics.",
+          "Discover the top Kerala gaming YouTubers. Real-time leaderboard with live subscriber counts, rankings, and analytics for God's own gaming country.",
       },
-      { property: "og:title", content: "Kerala Gaming Leaderboard" },
+      {
+        name: "keywords",
+        content:
+          "Kerala Gaming, Kerala YouTubers, Gaming Leaderboard, Live Subscriber Count, Malayalam Gaming, Esports Kerala, Gaming Community Kerala",
+      },
+      // Open Graph / Facebook
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://keralagamingcommunity.vercel.app/" },
+      { property: "og:title", content: "Kerala Gaming Leaderboard — Live Creator Ranks" },
       {
         property: "og:description",
-        content: "Live ranks for Kerala's most influential gaming creators.",
+        content: "The pulse of Kerala's gaming creators, ranked in real time. Watch ranks shift and underdogs climb.",
       },
+      { property: "og:image", content: "https://forzayt.github.io/assets/emoji.png" },
+      { property: "og:site_name", content: "Kerala Gaming Community" },
+      // Twitter
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:url", content: "https://keralagamingcommunity.vercel.app/" },
+      { name: "twitter:title", content: "Kerala Gaming Leaderboard — Live Creator Ranks" },
+      {
+        name: "twitter:description",
+        content: "The pulse of Kerala's gaming creators, ranked in real time. Watch ranks shift and underdogs climb.",
+      },
+      { name: "twitter:image", content: "https://forzayt.github.io/assets/emoji.png" },
+      // Additional SEO
+      { name: "robots", content: "index, follow" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=5" },
+      { name: "theme-color", content: "#000000" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://keralagamingcommunity.vercel.app/" },
     ],
   }),
   component: Index,
@@ -95,8 +121,35 @@ function Index() {
   const top3 = live.slice(0, 3);
   const totalSubs = live.reduce((sum, c) => sum + c.subscribers, 0);
 
+  // Structured Data (JSON-LD) for SEO
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Kerala Gaming Community Leaderboard",
+    "description": "Real-time ranking of Kerala's top gaming creators on YouTube.",
+    "itemListElement": live.slice(0, 10).map((creator, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "Person",
+        "name": creator.name,
+        "url": creator.url,
+        "image": creator.avatar,
+        "description": creator.description,
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": creator.url
+        }
+      }
+    }))
+  };
+
   return (
     <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="border-b border-border/40 backdrop-blur-xl bg-background/60 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -307,10 +360,14 @@ function Index() {
             <span>Views</span>
             <span className="text-right">Action</span>
           </div>
-          {!isLoading &&
-            filtered.map((c) => (
-              <LeaderboardRow key={c.id} creator={c} onClick={() => setSelected(c)} />
-            ))}
+          <ul className="space-y-2">
+            {!isLoading &&
+              filtered.map((c) => (
+                <li key={c.id}>
+                  <LeaderboardRow creator={c} onClick={() => setSelected(c)} />
+                </li>
+              ))}
+          </ul>
           {isLoading && <LeaderboardSkeleton />}
           {isError && (
             <div className="glass rounded-2xl p-10 text-center space-y-3">
@@ -377,10 +434,10 @@ function Index() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <article>
       <div className="text-2xl font-bold text-gradient tabular-nums">{value}</div>
-      <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{label}</div>
-    </div>
+      <h3 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{label}</h3>
+    </article>
   );
 }
 
@@ -405,6 +462,7 @@ function SelectChip({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="bg-transparent outline-none capitalize cursor-pointer"
+        aria-label={`${prefix} filter`}
       >
         {options.map((o) => (
           <option key={o} value={o} className="bg-popover capitalize">

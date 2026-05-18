@@ -66,7 +66,7 @@ function PodiumItem({
           <div className="relative">
             <img
               src={creator.avatar}
-              alt={creator.name}
+              alt={`${creator.name} podium avatar`}
               className={`relative size-16 sm:size-20 rounded-full transition-all ${
                 isLive 
                   ? "ring-4 ring-red-500 ring-offset-2 ring-offset-background animate-pulse" 

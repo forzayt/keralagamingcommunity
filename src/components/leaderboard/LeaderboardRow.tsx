@@ -46,7 +46,7 @@ export function LeaderboardRow({
           <div className="relative shrink-0">
             <img
               src={creator.avatar}
-              alt={creator.name}
+              alt={`${creator.name} avatar`}
               className={`size-10 sm:size-12 rounded-full shrink-0 transition-all ${
                 isLive 
                   ? "ring-2 ring-red-500 ring-offset-2 ring-offset-background animate-pulse" 
