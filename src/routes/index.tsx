@@ -347,17 +347,20 @@ function GamerSubmitModal({ isOpen, onClose, onSuccess }: { isOpen: boolean, onC
     if (!url) return;
     setLoading(true);
     try {
-      await fetch("https://formsubmit.co/ajax/vishnusanthoshvr@gmail.com", {
+      const response = await fetch("/api/submit", {
         method: "POST",
         headers: { 
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         },
         body: JSON.stringify({ 
-          _subject: "New Gamer Submission for Kerala Gaming Leaderboard",
           YouTubeUrl: url
         })
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit");
+      }
       setUrl("");
       onSuccess();
     } catch (error) {
