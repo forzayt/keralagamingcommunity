@@ -8,7 +8,15 @@ export function useLiveStatus(channelUrl: string) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!channelUrl) return;
+    if (!channelUrl) {
+      setIsLive(null);
+      setIsLoading(false);
+      return;
+    }
+
+    // Reset state when URL changes to avoid showing stale data from previous creator
+    setIsLive(null);
+    setIsLoading(true);
 
     // Check cache first
     const cached = statusCache[channelUrl];
@@ -69,8 +77,6 @@ export function useLiveStatus(channelUrl: string) {
       ];
 
       try {
-        setIsLoading(true);
-        
         // Try all proxies in parallel and take the first one that succeeds
         const content = await Promise.any(
           proxies.map(proxy => fetchWithProxy(proxy.fn, proxy.isAllOrigins))
@@ -80,9 +86,15 @@ export function useLiveStatus(channelUrl: string) {
         controllers.forEach(c => c.abort());
 
         // Check for indicators of a live stream in the page content
-        const liveIndicator = content.includes('liveStreamabilityRenderer') || 
+        // We look for specific markers that indicate a stream is ACTUALLY live and not just scheduled or past
+        const hasLiveMarkers = content.includes('liveStreamabilityRenderer') || 
                              content.includes('"isLive":true') ||
                              content.includes('videoIsLive":true');
+        
+        // Filter out scheduled/upcoming streams which often have "isLive": true but are not actually playing
+        const isUpcoming = content.includes('"status":"UPCOMING"') || content.includes('"upcomingEventData"');
+        
+        const liveIndicator = hasLiveMarkers && !isUpcoming;
 
         if (isMounted) {
           statusCache[channelUrl] = { isLive: liveIndicator, timestamp: Date.now() };
@@ -101,9 +113,7 @@ export function useLiveStatus(channelUrl: string) {
       }
     }
 
-    if (channelUrl) {
-      checkStatus();
-    }
+    checkStatus();
 
     return () => {
       isMounted = false;
