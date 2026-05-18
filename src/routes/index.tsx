@@ -216,12 +216,10 @@ function Index() {
             <span>Views</span>
             <span className="text-right">Action</span>
           </div>
-          <AnimatePresence>
-            {!isLoading &&
-              filtered.map((c) => (
-                <LeaderboardRow key={c.id} creator={c} onClick={() => setSelected(c)} />
-              ))}
-          </AnimatePresence>
+          {!isLoading &&
+            filtered.map((c) => (
+              <LeaderboardRow key={c.id} creator={c} onClick={() => setSelected(c)} />
+            ))}
           {isLoading && <LeaderboardSkeleton />}
           {isError && (
             <div className="glass rounded-2xl p-10 text-center space-y-3">
