@@ -34,23 +34,6 @@ function deriveNiche(name: string, description: string, keywords: string | null)
   return Array.from(found).slice(0, 3);
 }
 
-async function checkIsLive(handle: string): Promise<boolean> {
-  try {
-    // We use the /live URL which redirects to the stream if live or the home page if not
-    const url = `https://www.youtube.com/${handle}/live`;
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-      }
-    });
-    const text = await res.text();
-    // These are common indicators in the initial player response or page source
-    return text.includes('isLiveNow":true') || text.includes('hlsManifestUrl') || text.includes('liveBroadcastDetails');
-  } catch (e) {
-    return false;
-  }
-}
-
 async function fetchChannel(url: string, idx: number, apiKey: string) {
   try {
     const base = url.replace(/\/+$/, "");
@@ -72,7 +55,6 @@ async function fetchChannel(url: string, idx: number, apiKey: string) {
       }
     }
 
-    // Fetch basic stats from API (low quota cost)
     const res = await fetch(apiUrl);
     if (!res.ok) return null;
     const data = await res.json();
@@ -82,9 +64,6 @@ async function fetchChannel(url: string, idx: number, apiKey: string) {
     const channel = data.items[0];
     const snippet = channel.snippet;
     const stats = channel.statistics;
-
-    // Simultaneously check live status via scraping (zero quota cost)
-    const isLive = await checkIsLive(handle);
 
     return {
       id: handle.toLowerCase() + "-" + idx,
@@ -99,7 +78,6 @@ async function fetchChannel(url: string, idx: number, apiKey: string) {
       verified: true,
       trending: "up",
       description: snippet.description,
-      isLive,
     };
   } catch (e) {
     console.error("fetchChannel failed", url, e);
@@ -124,8 +102,8 @@ export default async function handler(req: any, res: any) {
     const results = await Promise.all(validUrls.map((u, i) => fetchChannel(u, i, apiKey)));
     const creators = results.filter((c) => c !== null);
 
-    // Cache metadata for 24 hours (86400 seconds)
-    // This strictly protects your API quota for 100+ creators
+    // Cache on Vercel CDN for 1 day (86400 seconds)
+    // stale-while-revalidate=3600 allows serving stale content while refetching in the background
     res.setHeader("Cache-Control", "s-maxage=86400, stale-while-revalidate=3600");
     return res.status(200).json(creators);
   } catch (error) {

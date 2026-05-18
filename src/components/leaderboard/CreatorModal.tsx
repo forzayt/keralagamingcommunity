@@ -9,7 +9,6 @@ import {
   Tag,
   Youtube,
   Gamepad2,
-  Radio,
 } from "lucide-react";
 import type { LiveCreator } from "./types";
 import { formatNumber, formatFull } from "@/lib/format";
@@ -62,11 +61,6 @@ export function CreatorModal({
                   <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="text-2xl font-bold">{creator.name}</h2>
                     {creator.verified && <BadgeCheck className="size-5 text-primary" />}
-                    {creator.isLive && (
-                      <span className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20 text-[10px] font-black animate-pulse">
-                        <Radio className="size-3" /> LIVE NOW
-                      </span>
-                    )}
                     <span className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider bg-primary/15 text-primary border border-primary/30">
                       Rank #{creator.rank}
                     </span>
@@ -136,25 +130,14 @@ export function CreatorModal({
 
               <div className="flex flex-wrap gap-2">
                 <SocialLink icon={Youtube} href={creator.url} label="YouTube Channel" />
-                {creator.isLive ? (
-                  <a
-                    href={`${creator.url}/live`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="ml-auto inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition shadow-[0_0_20px_rgba(220,38,38,0.4)] animate-pulse"
-                  >
-                    <Radio className="size-4" /> Watch Stream Now
-                  </a>
-                ) : (
-                  <a
-                    href={creator.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold text-sm hover:opacity-90 transition"
-                  >
-                    Visit Channel <ExternalLink className="size-3.5" />
-                  </a>
-                )}
+                <a
+                  href={creator.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold text-sm hover:opacity-90 transition"
+                >
+                  Visit Channel <ExternalLink className="size-3.5" />
+                </a>
               </div>
             </div>
           </div>

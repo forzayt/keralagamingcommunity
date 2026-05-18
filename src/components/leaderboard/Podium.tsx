@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Crown, Trophy, Medal, TrendingUp, BadgeCheck, Radio } from "lucide-react";
+import { Crown, Trophy, Medal, TrendingUp, BadgeCheck } from "lucide-react";
 import type { LiveCreator } from "./types";
 import { formatNumber } from "@/lib/format";
 
@@ -82,13 +82,6 @@ export function Podium({
                   <span className="font-bold text-sm sm:text-base truncate">{creator.name}</span>
                   {creator.verified && <BadgeCheck className="size-3.5 text-primary shrink-0" />}
                 </div>
-                {creator.isLive && (
-                  <div className="flex justify-center mt-1">
-                    <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-red-500/10 text-red-500 border border-red-500/20 text-[9px] font-black animate-pulse">
-                      <Radio className="size-2.5" /> LIVE
-                    </span>
-                  </div>
-                )}
                 <div className="text-xs text-muted-foreground truncate">{creator.handle}</div>
                 <div className="mt-2 text-lg sm:text-xl font-bold text-gradient tabular-nums">
                   {formatNumber(creator.subscribers)}
@@ -98,25 +91,14 @@ export function Podium({
                 </div>
               </div>
               <div
-                className={`w-full ${meta.height} rounded-xl flex flex-col items-center justify-center gap-2`}
+                className={`w-full ${meta.height} rounded-xl flex items-center justify-center text-3xl sm:text-5xl font-black`}
                 style={{
                   background: `linear-gradient(180deg, ${meta.color}, transparent 90%)`,
                   color: "oklch(0.12 0.02 270)",
                   opacity: 0.85,
                 }}
               >
-                <span className="text-3xl sm:text-5xl font-black">{creator.rank}</span>
-                {creator.isLive && (
-                  <a
-                    href={`${creator.url}/live`}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="px-4 py-1.5 rounded-lg bg-red-600 text-white text-[10px] font-black uppercase tracking-wider shadow-lg hover:bg-red-700 transition-colors flex items-center gap-1.5"
-                  >
-                    <Radio className="size-3" /> Watch Live
-                  </a>
-                )}
+                {creator.rank}
               </div>
               {creator.trending === "up" && (
                 <div className="flex items-center gap-1 text-xs text-[oklch(0.88_0.22_140)]">

@@ -34,12 +34,6 @@ function deriveNiche(name: string, description: string, keywords: string | null)
   return Array.from(found).slice(0, 3);
 }
 
-async function checkIsLive(handle: string): Promise<boolean> {
-  // Client-side scraping is blocked by CORS. 
-  // We return false here and rely on the /api/live endpoint for real data.
-  return false;
-}
-
 async function fetchChannel(url: string, idx: number, apiKey: string): Promise<Creator | null> {
   try {
     const base = url.replace(/\/+$/, "");
@@ -71,8 +65,6 @@ async function fetchChannel(url: string, idx: number, apiKey: string): Promise<C
     const snippet = channel.snippet;
     const stats = channel.statistics;
 
-    const isLive = await checkIsLive(handle);
-
     return {
       id: handle.toLowerCase() + "-" + idx,
       name: snippet.title,
@@ -86,7 +78,6 @@ async function fetchChannel(url: string, idx: number, apiKey: string): Promise<C
       verified: true, // You can assume true for large channels, or leave false. YouTube API doesn't provide a direct flag.
       trending: "up",
       description: snippet.description,
-      isLive,
     };
   } catch (e) {
     console.error("fetchChannel failed", url, e);

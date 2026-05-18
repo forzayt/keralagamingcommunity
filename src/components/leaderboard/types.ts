@@ -13,7 +13,6 @@ export interface Creator {
   verified: boolean;
   trending: Trend;
   description: string;
-  isLive: boolean;
 }
 
 export interface LiveCreator extends Creator {
