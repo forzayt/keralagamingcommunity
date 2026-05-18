@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Filter, Gamepad2, Trophy, Radio, Loader2 } from "lucide-react";
+import { Search, Filter, Gamepad2, Trophy, Radio, Loader2, Menu, X, Plus } from "lucide-react";
 import creatorUrls from "@/data/creators.json";
 import type { LiveCreator } from "@/components/leaderboard/types";
 import { useLiveCreators } from "@/components/leaderboard/useLiveCreators";
@@ -71,6 +71,7 @@ function Index() {
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const niches = useMemo(
     () => ["all", ...Array.from(new Set(seed.flatMap((c) => c.niche))).sort()],
@@ -114,7 +115,7 @@ function Index() {
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setShowSubmitModal(true)}
-              className="hidden sm:flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all hover:scale-105 text-xs font-bold shadow-[0_0_15px_oklch(0.72_0.22_160/0.15)] hover:shadow-[0_0_20px_oklch(0.72_0.22_160/0.3)] overflow-hidden min-w-[170px] justify-center"
+              className="hidden sm:flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all hover:scale-105 text-xs font-bold shadow-[0_0_15px_oklch(0.72_0.22_160/0.15)] hover:shadow-[0_0_20px_oklch(0.72_0.22_160/0.3)] overflow-hidden min-w-[170px] justify-center cursor-pointer"
             >
               <AnimatePresence mode="wait">
                 <motion.span
@@ -139,8 +140,98 @@ function Index() {
                 Streaming Now
               </a>
             </div>
+
+            {/* Mobile hamburger menu toggle */}
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="sm:hidden p-2 rounded-xl glass border border-border/40 hover:bg-secondary/40 transition-all active:scale-95 text-foreground cursor-pointer"
+              aria-label="Toggle menu"
+            >
+              {showMobileMenu ? <X className="size-5" /> : <Menu className="size-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Navigation Drawer */}
+        <AnimatePresence>
+          {showMobileMenu && (
+            <>
+              {/* Backdrop overlay */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowMobileMenu(false)}
+                className="fixed inset-0 top-[73px] z-20 bg-background/80 backdrop-blur-md sm:hidden"
+              />
+              {/* Dropdown Menu Panel */}
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                className="absolute left-0 right-0 top-full z-20 border-b border-border/40 bg-black p-6 sm:hidden flex flex-col gap-5 overflow-hidden"
+              >
+                <div className="flex flex-col gap-3 items-center">
+                  <button 
+                    onClick={() => {
+                      setShowMobileMenu(false);
+                      setShowSubmitModal(true);
+                    }}
+                    className="w-full flex items-center px-4 py-2.5 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all hover:scale-102 text-xs font-bold shadow-[0_0_15px_oklch(0.72_0.22_160/0.15)] hover:shadow-[0_0_20px_oklch(0.72_0.22_160/0.3)] overflow-hidden justify-center cursor-pointer"
+                  >
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={btnTextIdx}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex items-center gap-1.5"
+                      >
+                        <Plus className="size-3.5" />
+                        {buttonTexts[btnTextIdx]}
+                      </motion.span>
+                    </AnimatePresence>
+                  </button>
+
+                  <div className="w-full flex items-center gap-2 px-3 py-2.5 rounded-full glass border border-border/20 text-xs justify-center">
+                    <span className="relative flex size-2">
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-[oklch(0.88_0.22_140)] opacity-60 animate-ping" />
+                      <span className="relative inline-flex rounded-full size-2 bg-[oklch(0.88_0.22_140)]" />
+                    </span>
+                    <Radio className="size-3.5 text-primary" />
+                    <a href="https://www.tvaxkva.com/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                      Streaming Now
+                    </a>
+                  </div>
+                </div>
+
+                <div className="h-px bg-border/20 w-full" />
+
+                <div className="flex flex-col gap-3 text-xs text-center">
+                  <button 
+                    onClick={() => {
+                      setShowMobileMenu(false);
+                      setShowPrivacyModal(true);
+                    }}
+                    className="hover:text-primary text-muted-foreground transition-colors hover:underline cursor-pointer py-1"
+                  >
+                    Privacy Policy
+                  </button>
+                  <a 
+                    href="https://github.com/forzayt" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-primary text-muted-foreground transition-colors py-1"
+                  >
+                    Follow me on github | Forzayt
+                  </a>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10">
