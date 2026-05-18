@@ -21,24 +21,47 @@ export function useLiveStatus(channelUrl: string) {
     let isMounted = true;
 
     async function checkStatus() {
+      const liveUrl = `${channelUrl.replace(/\/$/, "")}/live`;
+      
+      const fetchWithProxy = async (proxyFn: (url: string) => string, isAllOrigins: boolean) => {
+        const proxyUrl = proxyFn(liveUrl);
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error(`Proxy failed: ${proxyUrl}`);
+        
+        if (isAllOrigins) {
+          const data = await response.json();
+          return data.contents;
+        }
+        return await response.text();
+      };
+
+      const proxies = [
+        { fn: (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`, isAllOrigins: false },
+        { fn: (url: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, isAllOrigins: true },
+        { fn: (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`, isAllOrigins: false }
+      ];
+
       try {
         setIsLoading(true);
-        // We use a CORS proxy to check the live status of the YouTube channel
-        // YouTube's /live URL redirects to the active stream if the channel is live
-        const liveUrl = `${channelUrl.replace(/\/$/, "")}/live`;
-        
-        // Using a public CORS proxy for the check
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(liveUrl)}`;
-        
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error("Proxy request failed");
-        
-        const data = await response.json();
-        const content = data.contents;
+        let content = "";
+        let success = false;
+
+        for (const proxy of proxies) {
+          try {
+            content = await fetchWithProxy(proxy.fn, proxy.isAllOrigins);
+            if (content) {
+              success = true;
+              break;
+            }
+          } catch (e) {
+            console.warn(`Proxy failed, trying next...`, e);
+            continue;
+          }
+        }
+
+        if (!success) throw new Error("All proxies failed");
         
         // Check for indicators of a live stream in the page content
-        // "liveStreamabilityRenderer" is a common indicator in YouTube's internal data
-        // "isLive":true is another one
         const liveIndicator = content.includes('liveStreamabilityRenderer') || 
                              content.includes('"isLive":true') ||
                              content.includes('videoIsLive":true');
