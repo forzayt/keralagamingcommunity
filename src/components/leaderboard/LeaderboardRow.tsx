@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowUp, ArrowDown, Minus, BadgeCheck, Eye, Radio } from "lucide-react";
 import type { LiveCreator } from "./types";
 import { formatNumber } from "@/lib/format";
+import { useLiveStatus } from "@/hooks/useLiveStatus";
 
 export function LeaderboardRow({
   creator,
@@ -10,6 +11,7 @@ export function LeaderboardRow({
   creator: LiveCreator;
   onClick: () => void;
 }) {
+  const { isLive } = useLiveStatus(creator.url);
   const rankDiff = creator.previousRank - creator.rank;
   const RankIcon = rankDiff > 0 ? ArrowUp : rankDiff < 0 ? ArrowDown : Minus;
   const rankColor =
@@ -100,15 +102,17 @@ export function LeaderboardRow({
         </div>
 
         <div className="flex items-center justify-end gap-2 text-right">
-          <a
-            href={`${creator.url}/live`}
-            target="_blank"
-            rel="noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="px-3 py-1.5 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 text-[10px] font-black hover:bg-red-500 hover:text-white transition-all flex items-center gap-1.5"
-          >
-            <Radio className="size-3" /> Live
-          </a>
+          {isLive && (
+            <a
+              href={`${creator.url}/live`}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="px-3 py-1.5 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 text-[10px] font-black hover:bg-red-500 hover:text-white transition-all flex items-center gap-1.5 animate-pulse"
+            >
+              <Radio className="size-3" /> Live
+            </a>
+          )}
           <span className="px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-black shadow-[0_0_15px_oklch(0.72_0.22_160/0.05)] group-hover:bg-primary/20 group-hover:border-primary/30 transition-all group-hover:scale-[1.03]">
             View
           </span>
