@@ -9,10 +9,11 @@ import {
   Tag,
   Youtube,
   Gamepad2,
+  Radio,
 } from "lucide-react";
 import type { LiveCreator } from "./types";
 import { formatNumber, formatFull } from "@/lib/format";
-
+import { useLiveStatus } from "@/hooks/useLiveStatus";
 
 export function CreatorModal({
   creator,
@@ -21,6 +22,7 @@ export function CreatorModal({
   creator: LiveCreator | null;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { isLive } = useLiveStatus(creator?.url ?? "");
 
   const avgViews = useMemo(() => {
     if (!creator || creator.videos <= 0) return 0;
@@ -50,12 +52,23 @@ export function CreatorModal({
             <div className="relative p-6 sm:p-8 space-y-6">
               <div className="flex items-start gap-4">
                 <div className="relative shrink-0">
-                  <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-primary to-accent blur-md opacity-70" />
+                  <div className={`absolute -inset-1 rounded-full blur-md opacity-70 transition-all ${
+                    isLive ? "bg-red-500 animate-pulse" : "bg-gradient-to-br from-primary to-accent"
+                  }`} />
                   <img
                     src={creator.avatar}
                     alt={creator.name}
-                    className="relative size-20 rounded-full ring-2 ring-white/10"
+                    className={`relative size-20 rounded-full transition-all ${
+                      isLive 
+                        ? "ring-4 ring-red-500 ring-offset-4 ring-offset-background" 
+                        : "ring-2 ring-white/10"
+                    }`}
                   />
+                  {isLive && (
+                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-red-500 text-[9px] font-bold px-2 py-0.5 rounded-full text-white uppercase tracking-wider ring-2 ring-background whitespace-nowrap z-10">
+                      Watch Live
+                    </span>
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -128,16 +141,29 @@ export function CreatorModal({
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <SocialLink icon={Youtube} href={creator.url} label="YouTube Channel" />
-                <a
-                  href={creator.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold text-sm hover:opacity-90 transition"
-                >
-                  Visit Channel <ExternalLink className="size-3.5" />
-                </a>
+                
+                <div className="ml-auto flex items-center gap-2">
+                  {isLive && (
+                    <a
+                      href={`${creator.url.replace(/\/$/, "")}/live`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 text-white font-bold text-sm hover:bg-red-600 transition animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+                    >
+                      <Radio className="size-3.5" /> Watch Live
+                    </a>
+                  )}
+                  <a
+                    href={creator.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold text-sm hover:opacity-90 transition"
+                  >
+                    Visit Channel <ExternalLink className="size-3.5" />
+                  </a>
+                </div>
               </div>
             </div>
           </div>

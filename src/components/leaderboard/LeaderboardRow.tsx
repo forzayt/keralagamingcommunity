@@ -43,11 +43,22 @@ export function LeaderboardRow({
         </div>
 
         <div className="flex items-center gap-3 min-w-0">
-          <img
-            src={creator.avatar}
-            alt={creator.name}
-            className="size-10 sm:size-12 rounded-full ring-1 ring-border shrink-0"
-          />
+          <div className="relative shrink-0">
+            <img
+              src={creator.avatar}
+              alt={creator.name}
+              className={`size-10 sm:size-12 rounded-full shrink-0 transition-all ${
+                isLive 
+                  ? "ring-2 ring-red-500 ring-offset-2 ring-offset-background animate-pulse" 
+                  : "ring-1 ring-border"
+              }`}
+            />
+            {isLive && (
+               <span className="absolute -bottom-1 -right-1 bg-red-500 text-[7px] font-bold px-1 py-0.5 rounded-sm text-white uppercase tracking-tighter ring-1 ring-background whitespace-nowrap">
+                 Watch Live
+               </span>
+             )}
+          </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="font-semibold truncate">{creator.name}</span>
