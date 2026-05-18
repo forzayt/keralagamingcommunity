@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Crown, Trophy, Medal, TrendingUp, BadgeCheck } from "lucide-react";
+import { Crown, Trophy, Medal, BadgeCheck } from "lucide-react";
 import type { LiveCreator } from "./types";
 import { formatNumber } from "@/lib/format";
 
@@ -100,11 +100,6 @@ export function Podium({
               >
                 {creator.rank}
               </div>
-              {creator.trending === "up" && (
-                <div className="flex items-center gap-1 text-xs text-[oklch(0.88_0.22_140)]">
-                  <TrendingUp className="size-3" /> trending
-                </div>
-              )}
             </div>
           </motion.button>
         );
