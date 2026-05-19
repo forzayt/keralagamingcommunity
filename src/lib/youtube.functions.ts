@@ -111,7 +111,7 @@ export const fetchChannels = async (data: { urls: string[] }): Promise<Creator[]
     return [];
   }
 
-  const validUrls = data.urls.slice(0, 50).filter((u) => typeof u === "string");
+  const validUrls = data.urls.filter((u) => typeof u === "string");
   const results = await Promise.all(validUrls.map((u, i) => fetchChannel(u, i, apiKey)));
   return results.filter((c): c is Creator => c !== null);
 };

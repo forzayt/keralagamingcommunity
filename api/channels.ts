@@ -98,7 +98,7 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const validUrls = (creatorUrls as string[]).slice(0, 50);
+    const validUrls = (creatorUrls as string[]);
     const results = await Promise.all(validUrls.map((u, i) => fetchChannel(u, i, apiKey)));
     const creators = results.filter((c) => c !== null);
 
