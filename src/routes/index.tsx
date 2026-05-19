@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Search, Filter, Gamepad2, Trophy, Radio, Loader2, Menu, X, Plus, ArrowDown } from "lucide-react";
 import creatorUrls from "@/data/creators.json";
 import type { LiveCreator } from "@/components/leaderboard/types";
@@ -10,9 +10,9 @@ import { Podium } from "@/components/leaderboard/Podium";
 import { LeaderboardRow } from "@/components/leaderboard/LeaderboardRow";
 import { CreatorModal } from "@/components/leaderboard/CreatorModal";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import { fetchChannels } from "@/lib/youtube.functions";
 import { supabase } from "@/lib/supabase";
+import { LoadingAnimation } from "@/components/LoadingAnimation";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -66,26 +66,29 @@ type SortKey = "subscribers" | "views" | "videos";
 function Index() {
   const {
     data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
     isLoading,
     isError,
     refetch,
-  } = useInfiniteQuery({
+  } = useQuery({
     queryKey: ["channels", urls],
-    queryFn: ({ pageParam = 0 }) => fetchChannels({ urls, offset: pageParam as number, limit: 100 }),
-    initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
-      const loadedCount = allPages.length * 100;
-      return lastPage.hasMore ? loadedCount : undefined;
-    },
+    queryFn: () => fetchChannels({ urls, limit: 500 }),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 
-  const seed = useMemo(() => data?.pages.flatMap((page) => page.creators) ?? [], [data]);
-  const totalCount = data?.pages[0]?.total ?? urls.length;
+  const [minLoading, setMinLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMinLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const showLoading = isLoading || minLoading;
+
+  const seed = data?.creators ?? [];
+  const totalCount = data?.total ?? urls.length;
   const live = useLiveCreators(seed);
   const [query, setQuery] = useState("");
   const [btnTextIdx, setBtnTextIdx] = useState(0);
@@ -160,6 +163,11 @@ function Index() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      
+      <AnimatePresence>
+        {showLoading && <LoadingAnimation />}
+      </AnimatePresence>
+
       <header className="border-b border-border/40 backdrop-blur-xl bg-background/60 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -298,124 +306,107 @@ function Index() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10">
-        <motion.section
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 100, damping: 20 }}
-          className="space-y-4"
-        >
-          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-primary">
-            <Trophy className="size-3.5" /> season 26 · live
-          </div>
-          <h2 className="text-4xl sm:text-6xl font-black leading-[1.05] max-w-3xl">
-            The pulse of <span className="text-gradient">Kerala's</span> gaming creators, ranked in
-            real time.
-          </h2>
-          <p className="text-muted-foreground max-w-2xl">
-            Subscriber counts update every second. Watch ranks shift, podiums shake, and underdogs
-            climb — straight from God's own gaming country.
-          </p>
-          <div className="flex flex-wrap gap-6 pt-2 text-sm">
-            <Stat label="Creators tracked" value={totalCount.toString()} />
-            <Stat label="Combined reach" value={(totalSubs / 1_000_000).toFixed(2) + "M"} />
-            <Stat label="Niches" value={(niches.length - 1).toString()} />
-          </div>
-        </motion.section>
+        {!showLoading && (
+          <>
+            <motion.section
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 100, damping: 20 }}
+              className="space-y-4"
+            >
+              <div className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-primary">
+                <Trophy className="size-3.5" /> season 26 · live
+              </div>
+              <h2 className="text-4xl sm:text-6xl font-black leading-[1.05] max-w-3xl">
+                The pulse of <span className="text-gradient">Kerala's</span> gaming creators, ranked in
+                real time.
+              </h2>
+              <p className="text-muted-foreground max-w-2xl">
+                Subscriber counts update every second. Watch ranks shift, podiums shake, and underdogs
+                climb — straight from God's own gaming country.
+              </p>
+              <div className="flex flex-wrap gap-6 pt-2 text-sm">
+                <Stat label="Creators tracked" value={totalCount.toString()} />
+                <Stat label="Combined reach" value={(totalSubs / 1_000_000).toFixed(2) + "M"} />
+                <Stat label="Niches" value={(niches.length - 1).toString()} />
+              </div>
+            </motion.section>
 
-        {isLoading ? <PodiumSkeleton /> : <Podium top3={top3} onSelect={setSelected} />}
+            <Podium top3={top3} onSelect={setSelected} />
 
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.1 }}
-          className="glass rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:items-center"
-        >
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search creator, handle, or niche…"
-              className="pl-9 bg-secondary/40 border-border/60"
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <SelectChip
-              icon={<Filter className="size-3" />}
-              value={niche}
-              onChange={setNiche}
-              options={niches}
-              prefix="Niche"
-            />
-            <SelectChip
-              value={sortKey}
-              onChange={(v) => setSortKey(v as SortKey)}
-              options={["subscribers", "views", "videos"]}
-              prefix="Sort"
-            />
-          </div>
-        </motion.section>
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.1 }}
+              className="glass rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:items-center"
+            >
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search creator, handle, or niche…"
+                  className="pl-9 bg-secondary/40 border-border/60"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <SelectChip
+                  icon={<Filter className="size-3" />}
+                  value={niche}
+                  onChange={setNiche}
+                  options={niches}
+                  prefix="Niche"
+                />
+                <SelectChip
+                  value={sortKey}
+                  onChange={(v) => setSortKey(v as SortKey)}
+                  options={["subscribers", "views", "videos"]}
+                  prefix="Sort"
+                />
+              </div>
+            </motion.section>
 
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.2 }}
-          className="space-y-2"
-        >
-          <div className="hidden sm:grid grid-cols-[48px_2fr_1fr_1fr_1fr_120px] gap-4 px-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-            <span>#</span>
-            <span>Creator</span>
-            <span>Niche</span>
-            <span className="text-right">Subscribers</span>
-            <span>Views</span>
-            <span className="text-right">Action</span>
-          </div>
-          <ul className="space-y-2">
-            {!isLoading &&
-              filtered.map((c) => (
-                <li key={c.id}>
-                  <LeaderboardRow creator={c} onClick={() => setSelected(c)} />
-                </li>
-              ))}
-          </ul>
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.2 }}
+              className="space-y-2"
+            >
+              <div className="hidden sm:grid grid-cols-[48px_2fr_1fr_1fr_1fr_120px] gap-4 px-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                <span>#</span>
+                <span>Creator</span>
+                <span>Niche</span>
+                <span className="text-right">Subscribers</span>
+                <span>Views</span>
+                <span className="text-right">Action</span>
+              </div>
+              <ul className="space-y-2">
+                {filtered.map((c) => (
+                  <li key={c.id}>
+                    <LeaderboardRow creator={c} onClick={() => setSelected(c)} />
+                  </li>
+                ))}
+              </ul>
 
-          {hasNextPage && (
-            <div className="flex justify-center pt-8">
-              <button
-                onClick={() => fetchNextPage()}
-                disabled={isFetchingNextPage}
-                className="group relative flex items-center gap-2 px-8 py-3 rounded-2xl glass border border-border/40 hover:bg-secondary/40 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              >
-                {isFetchingNextPage ? (
-                  <Loader2 className="size-4 animate-spin text-primary" />
-                ) : (
-                  <ArrowDown className="size-4 text-primary group-hover:animate-bounce" />
-                )}
-                <span className="text-sm font-bold">
-                  {isFetchingNextPage ? "Loading more..." : `Load More (${totalCount - seed.length} remaining)`}
-                </span>
-              </button>
-            </div>
-          )}
-
-          {isLoading && <LeaderboardSkeleton />}
-          {isError && (
-            <div className="glass rounded-2xl p-10 text-center space-y-3">
-              <p className="text-muted-foreground">Couldn't reach YouTube. Try again.</p>
-              <button
-                onClick={() => refetch()}
-                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold"
-              >
-                Retry
-              </button>
-            </div>
-          )}
-          {!isLoading && !isError && filtered.length === 0 && (
-            <div className="glass rounded-2xl p-10 text-center text-muted-foreground">
-              No creators match those filters.
-            </div>
-          )}
-        </motion.section>
+              {isError && (
+                <div className="glass rounded-2xl p-10 text-center space-y-3">
+                  <p className="text-muted-foreground">Couldn't reach YouTube. Try again.</p>
+                  <button
+                    onClick={() => refetch()}
+                    className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold"
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
+              {!isError && filtered.length === 0 && (
+                <div className="glass rounded-2xl p-10 text-center text-muted-foreground">
+                  No creators match those filters.
+                </div>
+              )}
+            </motion.section>
+          </>
+        )}
 
         <footer className="pt-12 pb-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-center text-[11px] sm:text-xs text-muted-foreground">
           <span>Built by a gamer for gamers.</span>
@@ -501,64 +492,6 @@ function SelectChip({
         ))}
       </select>
     </label>
-  );
-}
-
-function PodiumSkeleton() {
-  return (
-    <div className="grid grid-cols-3 gap-3 sm:gap-6 items-end">
-      {[1, 0, 2].map((idx) => {
-        const height = idx === 0 ? "h-44" : idx === 1 ? "h-32" : "h-28";
-        return (
-          <div key={idx} className="glass-strong rounded-2xl p-4 sm:p-6 text-center animate-pulse">
-            <div className="flex flex-col items-center gap-3">
-              <Skeleton className="size-16 sm:size-20 rounded-full" />
-              <div className="w-full space-y-2 flex flex-col items-center">
-                <Skeleton className="h-4 w-2/3" />
-                <Skeleton className="h-3 w-1/2" />
-                <Skeleton className="h-6 w-3/4 mt-2" />
-              </div>
-              <Skeleton className={`w-full ${height} rounded-xl`} />
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function LeaderboardSkeleton() {
-  return (
-    <>
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={i}
-          className="w-full glass rounded-2xl p-4 grid grid-cols-[40px_1fr_auto] sm:grid-cols-[48px_2fr_1fr_1fr_1fr_80px] gap-3 sm:gap-4 items-center"
-        >
-          <Skeleton className="h-6 w-6" />
-          <div className="flex items-center gap-3">
-            <Skeleton className="size-10 sm:size-12 rounded-full shrink-0" />
-            <div className="space-y-2 w-full">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-3 w-24" />
-            </div>
-          </div>
-          <div className="hidden sm:flex gap-1">
-            <Skeleton className="h-4 w-16 rounded-full" />
-            <Skeleton className="h-4 w-12 rounded-full" />
-          </div>
-          <div className="hidden sm:block">
-            <Skeleton className="h-5 w-20 ml-auto" />
-          </div>
-          <div className="hidden sm:block">
-            <Skeleton className="h-5 w-16" />
-          </div>
-          <div className="hidden sm:block">
-            <Skeleton className="h-4 w-4 mx-auto" />
-          </div>
-        </div>
-      ))}
-    </>
   );
 }
 
