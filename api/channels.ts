@@ -98,14 +98,23 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const validUrls = (creatorUrls as string[]);
-    const results = await Promise.all(validUrls.map((u, i) => fetchChannel(u, i, apiKey)));
+    const urlParams = new URL(req.url, `http://${req.headers.host}`).searchParams;
+    const offset = parseInt(urlParams.get("offset") || "0");
+    const limit = parseInt(urlParams.get("limit") || "100");
+
+    const allUrls = creatorUrls as string[];
+    const validUrls = allUrls.slice(offset, offset + limit);
+    const results = await Promise.all(validUrls.map((u, i) => fetchChannel(u, i + offset, apiKey)));
     const creators = results.filter((c) => c !== null);
 
     // Cache on Vercel CDN for 1 day (86400 seconds)
     // stale-while-revalidate=3600 allows serving stale content while refetching in the background
     res.setHeader("Cache-Control", "s-maxage=86400, stale-while-revalidate=3600");
-    return res.status(200).json(creators);
+    return res.status(200).json({
+      creators,
+      total: allUrls.length,
+      hasMore: offset + limit < allUrls.length
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to fetch channels" });

@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
-import { Search, Filter, Gamepad2, Trophy, Radio, Loader2, Menu, X, Plus } from "lucide-react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Search, Filter, Gamepad2, Trophy, Radio, Loader2, Menu, X, Plus, ArrowDown } from "lucide-react";
 import creatorUrls from "@/data/creators.json";
 import type { LiveCreator } from "@/components/leaderboard/types";
 import { useLiveCreators } from "@/components/leaderboard/useLiveCreators";
@@ -65,17 +65,27 @@ type SortKey = "subscribers" | "views" | "videos";
 
 function Index() {
   const {
-    data: seed = [],
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     isLoading,
     isError,
     refetch,
-  } = useQuery({
+  } = useInfiniteQuery({
     queryKey: ["channels", urls],
-    queryFn: () => fetchChannels({ urls }),
+    queryFn: ({ pageParam = 0 }) => fetchChannels({ urls, offset: pageParam as number, limit: 100 }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      const loadedCount = allPages.length * 100;
+      return lastPage.hasMore ? loadedCount : undefined;
+    },
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 
+  const seed = useMemo(() => data?.pages.flatMap((page) => page.creators) ?? [], [data]);
+  const totalCount = data?.pages[0]?.total ?? urls.length;
   const live = useLiveCreators(seed);
   const [query, setQuery] = useState("");
   const [btnTextIdx, setBtnTextIdx] = useState(0);
@@ -306,7 +316,7 @@ function Index() {
             climb — straight from God's own gaming country.
           </p>
           <div className="flex flex-wrap gap-6 pt-2 text-sm">
-            <Stat label="Creators tracked" value={live.length.toString()} />
+            <Stat label="Creators tracked" value={totalCount.toString()} />
             <Stat label="Combined reach" value={(totalSubs / 1_000_000).toFixed(2) + "M"} />
             <Stat label="Niches" value={(niches.length - 1).toString()} />
           </div>
@@ -368,6 +378,26 @@ function Index() {
                 </li>
               ))}
           </ul>
+
+          {hasNextPage && (
+            <div className="flex justify-center pt-8">
+              <button
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="group relative flex items-center gap-2 px-8 py-3 rounded-2xl glass border border-border/40 hover:bg-secondary/40 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {isFetchingNextPage ? (
+                  <Loader2 className="size-4 animate-spin text-primary" />
+                ) : (
+                  <ArrowDown className="size-4 text-primary group-hover:animate-bounce" />
+                )}
+                <span className="text-sm font-bold">
+                  {isFetchingNextPage ? "Loading more..." : `Load More (${totalCount - seed.length} remaining)`}
+                </span>
+              </button>
+            </div>
+          )}
+
           {isLoading && <LeaderboardSkeleton />}
           {isError && (
             <div className="glass rounded-2xl p-10 text-center space-y-3">

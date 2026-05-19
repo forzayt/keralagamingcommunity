@@ -85,18 +85,19 @@ async function fetchChannel(url: string, idx: number, apiKey: string): Promise<C
   }
 }
 
-export const fetchChannels = async (data: { urls: string[] }): Promise<Creator[]> => {
-  if (!Array.isArray(data?.urls)) throw new Error("urls must be an array");
+export const fetchChannels = async (data: { urls: string[], offset?: number, limit?: number }): Promise<{ creators: Creator[], total: number, hasMore: boolean }> => {
+  const { urls, offset = 0, limit = 100 } = data;
+  if (!Array.isArray(urls)) throw new Error("urls must be an array");
 
   // 1. Try to fetch from the cached Vercel Serverless Function first
   try {
-    const res = await fetch("/api/channels");
+    const res = await fetch(`/api/channels?offset=${offset}&limit=${limit}`);
     const contentType = res.headers.get("content-type");
 
     // Check if it's JSON to avoid parsing Vite's HTML SPA fallback in local dev
     if (res.ok && contentType && contentType.includes("application/json")) {
       const apiData = await res.json();
-      if (Array.isArray(apiData)) {
+      if (apiData && Array.isArray(apiData.creators)) {
         return apiData;
       }
     }
@@ -108,10 +109,16 @@ export const fetchChannels = async (data: { urls: string[] }): Promise<Creator[]
   const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY;
   if (!apiKey) {
     console.error("VITE_YOUTUBE_API_KEY is not defined in your environment variables.");
-    return [];
+    return { creators: [], total: urls.length, hasMore: false };
   }
 
-  const validUrls = data.urls.filter((u) => typeof u === "string");
-  const results = await Promise.all(validUrls.map((u, i) => fetchChannel(u, i, apiKey)));
-  return results.filter((c): c is Creator => c !== null);
+  const subset = urls.slice(offset, offset + limit);
+  const results = await Promise.all(subset.map((u, i) => fetchChannel(u, i + offset, apiKey)));
+  const creators = results.filter((c): c is Creator => c !== null);
+  
+  return {
+    creators,
+    total: urls.length,
+    hasMore: offset + limit < urls.length
+  };
 };
